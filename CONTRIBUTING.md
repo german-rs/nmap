@@ -1,50 +1,45 @@
-# Table of Contents
+# Tabla de contenidos.
 
 ---
 
 - [Introducción](#intro)
-- [Code Repository](#repo)
-- [Bug Reports](#bug)
+- [Repositorio de código](#repo)
+- [Reporte de Bugs](#bug)
 - [Pull Requests](#pr)
-- [issues.nmap.org redirector](#issues)
-- [The HACKING file](#hacking)
+- [Redirecionador issues.nmap.org ](#issues)
+- [El archivo HACKING](#hacking)
 
 ## <a name="intro"></a>Introducción
 
-Este archivo sirve como suplemento al archivo [HACKING file](HACKING). Contiene información específica sobre el uso de Github por parte de Nmap y cómo los colaboradores pueden utilizar los servicios de Github para participar en el desarrollo de Nmap.
+Este archivo sirve como complemento al archivo [HACKING file](HACKING). Contiene información específica sobre el uso de Github por parte de Nmap y cómo los colaboradores pueden utilizar los servicios de Github para participar en el desarrollo de Nmap.
 
 ## <a name="repo"></a>Repositorio de código
 
-The authoritative code repository is still the Subversion repository at [https://svn.nmap.org/nmap](https://svn.nmap.org/nmap). The Github repository is synchronized once per hour. All commits are made directly to Subversion, so Github is a read-only mirror.
+El repositorio de código autorizado sigue siendo el repositorio Subversion en [https://svn.nmap.org/nmap](https://svn.nmap.org/nmap). El repositorio de Github se sincroniza una vez por hora. Todos los commits se realizan directamente en Subversion, por lo que Github es una réplica de sólo lectura.
 
-## <a name="bug"></a>Bug Reports
+## <a name="bug"></a>Reporte de Bugs
 
-Nmap uses Github Issues to keep track of bug reports. Please be sure to include the version of Nmap that you are using, steps to reproduce the bug, and a description of what you expect to be the correct behavior.
+Nmap utiliza Github Issues para hacer un seguimiento de los informes de errores. Por favor, asegúrese de incluir la versión de Nmap que está utilizando, los pasos para reproducir el error y una descripción de lo que espera que sea el comportamiento correcto.
 
 ## <a name="pr"></a>Pull Requests
 
-Nmap welcomes your code contribution in the form of a Github Pull Request. Since the Github repository is currently read-only, we cannot merge directly from the PR. Instead, we will convert your PR into a patch and apply it to the Subversion repository. We will be sure to properly credit you in the CHANGELOG file, and the commit message will reference the PR number.
+Nmap agradece sus contribuciones en forma de Pull Request en Github. Dado que el repositorio de Github es actualmente de sólo lectura, no podemos fusionar directamente desde el PR. En su lugar, convertiremos su PR en un parche y lo aplicaremos al repositorio Subversion. Nos aseguraremos de acreditarle adecuadamente en el archivo CHANGELOG, y el mensaje de confirmación hará referencia al número de PR.
 
-Because not all Nmap committers use Github daily, it is helpful to send a
-notification email to [dev@nmap.org](mailto:dev@nmap.org) referencing the PR and including a short
-description of the functionality of the patch.
+Dado que no todos los committers de Nmap utilizan Github a diario, es útil enviar un correo electrónico de notificación a [dev@nmap.org](mailto:dev@nmap.org) haciendo referencia al PR e incluyendo una breve descripción de la funcionalidad del parche.
 
-Using pull requests has several advantages over emailed patches:
+El uso de pull requests tiene varias ventajas sobre los parches enviados por correo electrónico:
 
-1. It allows Travis CI build tests to run and check for code issues.
+1. Permite que las pruebas de construcción de Travis CI se ejecuten y comprueben los problemas del código.
 
-2. Github's interface makes it easy to have a threaded discussion of code
-   changes.
+2. La interfaz de Github facilita la discusión de los cambios en el código.
 
-3. Referencing contributions by PR number is more convenient than tracking by
-   [seclists.org](http://seclists.org/) mail archive URL, especially when the discussion spans more than
-   one quarter year.
+3. Referenciar las contribuciones por el número de PR es más conveniente que rastrearlas por la URL del archivo de correo de
+   [seclists.org](http://seclists.org/) especialmente cuando la discusión abarca más de un trimestre del año.
 
-## <a name="issues"></a>issues.nmap.org redirector
+## <a name="issues"></a>Redirecionador issues.nmap.org
 
-For convenience, you may use [issues.nmap.org](http://issues.nmap.org) to redirect to issues (bug reports and pull requests) by number (e.g. [http://issues.nmap.org/34](http://issues.nmap.org/34)) or to link to the new-issue page: [http://issues.nmap.org/new](http://issues.nmap.org/new).
+Para mayor comodidad, puede utilizar [issues.nmap.org](http://issues.nmap.org) para redirigir a los temas (informes de errores y pull requests) por número (por ejemplo, [http://issues.nmap.org/34](http://issues.nmap.org/34)) o para enlazar a la página del nuevo tema [http://issues.nmap.org/new](http://issues.nmap.org/new).
 
-## <a name="hacking"></a>The HACKING file
+## <a name="hacking"></a>El archivo HACKING
 
-General information about hacking Nmap and engaging with our community of
-developers and users can be found in the [HACKING file](HACKING). It describes how to get started, licensing, style guidance, and how to use the dev mailing list.
+En el archivo [HACKING file](HACKING) se puede encontrar información general sobre cómo hackear Nmap y participar en nuestra comunidad de desarrolladores y usuarios. Describe cómo empezar, licencias, guía de estilo y cómo usar la lista de correo dev.
