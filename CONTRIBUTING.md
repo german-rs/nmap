@@ -1,18 +1,19 @@
 # Table of Contents
+
 ---
 
- * [Introduction](#intro)
- * [Code Repository](#repo)
- * [Bug Reports](#bug)
- * [Pull Requests](#pr)
- * [issues.nmap.org redirector](#issues)
- * [The HACKING file](#hacking)
+- [Introducción](#intro)
+- [Code Repository](#repo)
+- [Bug Reports](#bug)
+- [Pull Requests](#pr)
+- [issues.nmap.org redirector](#issues)
+- [The HACKING file](#hacking)
 
-## <a name="intro"></a>Introduction
+## <a name="intro"></a>Introducción
 
-This file serves as a supplement to the [HACKING file](HACKING). It contains information specifically about Nmap's use of Github and how contributors can use Github services to participate in Nmap development.
+Este archivo sirve como suplemento al archivo [HACKING file](HACKING). Contiene información específica sobre el uso de Github por parte de Nmap y cómo los colaboradores pueden utilizar los servicios de Github para participar en el desarrollo de Nmap.
 
-## <a name="repo"></a>Code Repository
+## <a name="repo"></a>Repositorio de código
 
 The authoritative code repository is still the Subversion repository at [https://svn.nmap.org/nmap](https://svn.nmap.org/nmap). The Github repository is synchronized once per hour. All commits are made directly to Subversion, so Github is a read-only mirror.
 
@@ -33,11 +34,11 @@ Using pull requests has several advantages over emailed patches:
 1. It allows Travis CI build tests to run and check for code issues.
 
 2. Github's interface makes it easy to have a threaded discussion of code
-changes.
+   changes.
 
 3. Referencing contributions by PR number is more convenient than tracking by
-[seclists.org](http://seclists.org/) mail archive URL, especially when the discussion spans more than
-one quarter year.
+   [seclists.org](http://seclists.org/) mail archive URL, especially when the discussion spans more than
+   one quarter year.
 
 ## <a name="issues"></a>issues.nmap.org redirector
 
