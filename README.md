@@ -1,43 +1,56 @@
-Nmap [![Build Status](https://travis-ci.org/nmap/nmap.svg?branch=master)](https://travis-ci.org/nmap/nmap) [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/nmap/nmap.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/nmap/nmap/context:cpp) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/nmap/nmap.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/nmap/nmap/context:python) [![Total alerts](https://img.shields.io/lgtm/alerts/g/nmap/nmap.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/nmap/nmap/alerts/)
-====
+# Nmap - Es
 
-Nmap is released under a custom license, which is based on (but not compatible
-with) GPLv2. The Nmap license allows free usage by end users, and we also offer
-a commercial license for companies that wish to redistribute Nmap technology
-with their products. See [Nmap Copyright and Licensing](https://nmap.org/book/man-legal.html)
-for full details.
+## Importante ⚠️
 
-The latest version of this software as well as binary installers for Windows,
-macOS, and Linux (RPM) are available from
+Este repositorio contiene mi estudio y traducción del proyecto Nmap, una herramienta de código abierto para exploración de redes y auditoría de seguridad.
+
+[Repositorio Original de Nmap](https://github.com/nmap/nmap)
+
+### Objetivo del Proyecto
+
+- Traducir el código fuente y documentación al español.
+- Comprender en profundidad la arquitectura y funcionamiento de Nmap.
+- Contribuir a la comunidad de software de código abierto.
+
+### Aviso Legal
+
+- Todos los derechos del código original pertenecen a los creadores de Nmap.
+- Esta es una iniciativa de estudio y traducción sin fines comerciales.
+
+## Introducción
+
+Nmap se publica bajo una licencia personalizada, basada en (pero no compatible con) GPLv2. La licencia de Nmap permite el uso libre por parte de los usuarios finales, y también ofrecemos una licencia comercial para empresas que deseen redistribuir la tecnología de Nmap con sus productos. Consulte [Derechos de autor y licencia de Nmap](https://nmap.org/book/man-legal.html)
+para más detalles.
+
+La última versión de este software, así como los instaladores binarios para Windows, macOS y Linux (RPM) están disponibles en
 [Nmap.org](https://nmap.org/download.html)
 
-Full documentation is also available
-[on the Nmap.org website](https://nmap.org/docs.html).
+La documentación completa también está disponible
+[en el sitio web Nmap.org](https://nmap.org/docs.html).
 
-Questions and suggestions may be sent to
-[the Nmap-dev mailing list](https://nmap.org/mailman/listinfo/dev).
+Las preguntas y sugerencias pueden enviarse a
+[la lista de correo Nmap-dev](https://nmap.org/mailman/listinfo/dev).
 
-Installing
-----------
-Ideally, you should be able to just type:
+## Instalación
+
+Lo ideal sería poder teclear sin más:
 
     ./configure
     make
     make install
 
-For far more in-depth compilation, installation, and removal notes, read the
-[Nmap Install Guide](https://nmap.org/book/install.html) on Nmap.org.
+Para más información sobre la compilación, instalación y desinstalación, lea la
+[Guía de instalación de Nmap](https://nmap.org/book/install.html) en Nmap.org.
 
-Using Nmap
-----------
-Nmap has a lot of features, but getting started is as easy as running `nmap
-scanme.nmap.org`. Running `nmap` without any parameters will give a helpful
-list of the most common options, which are discussed in depth in [the man
-page](https://nmap.org/book/man.html). Users who prefer a graphical interface
-can use the included [Zenmap front-end](https://nmap.org/zenmap/).
+## Uso de Nmap
 
-Contributing
-------------
-Information about filing bug reports and contributing to the Nmap project can
-be found in the [HACKING](HACKING) and [CONTRIBUTING.md](CONTRIBUTING.md)
-files.
+Nmap tiene muchas características, pero empezar es tan fácil como ejecutar `nmap
+scanme.nmap.org`. Ejecutar `nmap` sin ningún parámetro le dará una útil
+lista de las opciones más comunes, que se discuten en profundidad en [la página man
+page](https://nmap.org/book/man.html). Los usuarios que prefieran una interfaz gráfica
+pueden utilizar la interfaz Zenmap (https://nmap.org/zenmap/).
+
+## Contribución
+
+Puede encontrar información sobre cómo enviar informes de errores y contribuir al proyecto Nmap
+en los archivos [HACKING](HACKING) y [CONTRIBUTING.md](CONTRIBUTING.md)
