@@ -1,128 +1,161 @@
 /***************************************************************************
- * nmap.cc -- Currently handles some of Nmap's port scanning features as   *
- * well as the command line user interface.  Note that the actual main()   *
- * function is in main.cc                                                  *
+ * nmap.cc -- Actualmente maneja algunas de las características de escaneo  *
+ * de puertos de Nmap, así como la interfaz de línea de comandos para el   *
+ * usuario. Nótese que la función main() real está en main.cc              *
  *                                                                         *
- ***********************IMPORTANT NMAP LICENSE TERMS************************
+ *****************TÉRMINOS DE LICENCIA IMPORTANTES DE NMAP*******************
  *
- * The Nmap Security Scanner is (C) 1996-2025 Nmap Software LLC ("The Nmap
- * Project"). Nmap is also a registered trademark of the Nmap Project.
+ * El Escáner de Seguridad Nmap es (C) 1996-2025 Nmap Software LLC ("El Proyecto
+ * Nmap"). Nmap es también una marca registrada del Proyecto Nmap.
  *
- * This program is distributed under the terms of the Nmap Public Source
- * License (NPSL). The exact license text applying to a particular Nmap
- * release or source code control revision is contained in the LICENSE
- * file distributed with that version of Nmap or source code control
- * revision. More Nmap copyright/legal information is available from
- * https://nmap.org/book/man-legal.html, and further information on the
- * NPSL license itself can be found at https://nmap.org/npsl/ . This
- * header summarizes some key points from the Nmap license, but is no
- * substitute for the actual license text.
+ * Este programa es distribuido bajo los términos de la Licencia de Código Fuente
+ * Público de Nmap (NPSL). El texto exacto de la licencia que aplica a una versión
+ * particular de Nmap o revisión de control de código fuente está contenido en el
+ * archivo LICENSE distribuido con esa versión de Nmap o revisión de control de
+ * código fuente. Más información sobre derechos de autor/legal de Nmap está
+ * disponible en https://nmap.org/book/man-legal.html, y más información sobre
+ * la licencia NPSL en sí puede encontrarse en https://nmap.org/npsl/ . Este
+ * encabezado resume algunos puntos clave de la licencia de Nmap, pero no
+ * sustituye al texto real de la licencia.
  *
- * Nmap is generally free for end users to download and use themselves,
- * including commercial use. It is available from https://nmap.org.
+ * Nmap es generalmente gratuito para que los usuarios finales lo descarguen y
+ * lo usen, incluyendo uso comercial. Está disponible en https://nmap.org.
  *
- * The Nmap license generally prohibits companies from using and
- * redistributing Nmap in commercial products, but we sell a special Nmap
- * OEM Edition with a more permissive license and special features for
- * this purpose. See https://nmap.org/oem/
+ * La licencia de Nmap generalmente prohíbe a las empresas usar y redistribuir
+ * Nmap en productos comerciales, pero vendemos una Edición OEM de Nmap especial
+ * con una licencia más permisiva y características especiales para este propósito.
+ * Véase https://nmap.org/oem/
  *
- * If you have received a written Nmap license agreement or contract
- * stating terms other than these (such as an Nmap OEM license), you may
- * choose to use and redistribute Nmap under those terms instead.
+ * Si ha recibido un acuerdo de licencia de Nmap por escrito o un contrato que
+ * establece términos diferentes a estos (como una licencia OEM de Nmap), puede
+ * elegir usar y redistribuir Nmap bajo esos términos en su lugar.
  *
- * The official Nmap Windows builds include the Npcap software
- * (https://npcap.com) for packet capture and transmission. It is under
- * separate license terms which forbid redistribution without special
- * permission. So the official Nmap Windows builds may not be redistributed
- * without special permission (such as an Nmap OEM license).
+ * Las compilaciones oficiales de Nmap para Windows incluyen el software Npcap
+ * (https://npcap.com) para la captura y transmisión de paquetes. Está bajo
+ * términos de licencia separados que prohíben la redistribución sin permiso
+ * especial. Por lo tanto, las compilaciones oficiales de Nmap para Windows no
+ * pueden ser redistribuidas sin permiso especial (como una licencia OEM de Nmap).
  *
- * Source is provided to this software because we believe users have a
- * right to know exactly what a program is going to do before they run it.
- * This also allows you to audit the software for security holes.
+ * Se proporciona el código fuente de este software porque creemos que los usuarios
+ * tienen derecho a saber exactamente qué va a hacer un programa antes de ejecutarlo.
+ * Esto también le permite auditar el software en busca de agujeros de seguridad.
  *
- * Source code also allows you to port Nmap to new platforms, fix bugs, and
- * add new features. You are highly encouraged to submit your changes as a
- * Github PR or by email to the dev@nmap.org mailing list for possible
- * incorporation into the main distribution. Unless you specify otherwise, it
- * is understood that you are offering us very broad rights to use your
- * submissions as described in the Nmap Public Source License Contributor
- * Agreement. This is important because we fund the project by selling licenses
- * with various terms, and also because the inability to relicense code has
- * caused devastating problems for other Free Software projects (such as KDE
- * and NASM).
+ * El código fuente también le permite portar Nmap a nuevas plataformas, corregir
+ * errores y añadir nuevas características. Se le anima encarecidamente a enviar
+ * sus cambios como un PR de Github o por correo electrónico a la lista de correo
+ * dev@nmap.org para su posible incorporación a la distribución principal. A menos
+ * que especifique lo contrario, se entiende que nos está ofreciendo derechos muy
+ * amplios para usar sus contribuciones como se describe en el Acuerdo de Contribución
+ * de la Licencia de Código Fuente Público de Nmap. Esto es importante porque
+ * financiamos el proyecto vendiendo licencias con varios términos, y también porque
+ * la incapacidad de relicenciar código ha causado problemas devastadores para otros
+ * proyectos de Software Libre (como KDE y NASM).
  *
- * The free version of Nmap is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Warranties,
- * indemnification and commercial support are all available through the
- * Npcap OEM program--see https://nmap.org/oem/
+ * La versión gratuita de Nmap se distribuye con la esperanza de que sea útil,
+ * pero SIN NINGUNA GARANTÍA; ni siquiera la garantía implícita de COMERCIABILIDAD
+ * o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Las garantías, indemnización y soporte
+ * comercial están disponibles a través del programa OEM de Npcap--véase
+ * https://nmap.org/oem/
  *
  ***************************************************************************/
 
 /* $Id$ */
+/**
+ * @file nmap.cc
+ * @brief Sección de código con inclusiones y funciones utilitarias para Nmap
+ */
 
+/**
+ * Definiciones específicas para sistemas Windows
+ */
 #ifdef WIN32
 #include "winfix.h"
-/* This name collides in the following include. */
+/* Este nombre colisiona en la siguiente inclusión. */
 #undef PS_NONE
 #include <shlobj.h>
 #endif
 
+/**
+ * Inclusiones de cabeceras principales de Nmap
+ */
 #include "nmap.h"
-#include "osscan.h"
-#include "scan_engine.h"
-#include "FPEngine.h"
-#include "idle_scan.h"
-#include "NmapOps.h"
-#include "MACLookup.h"
-#include "traceroute.h"
-#include "nmap_tty.h"
-#include "nmap_ftp.h"
-#include "services.h"
-#include "targets.h"
-#include "tcpip.h"
-#include "NewTargets.h"
-#include "Target.h"
-#include "service_scan.h"
-#include "charpool.h"
-#include "nmap_error.h"
-#include "utils.h"
-#include "xml.h"
-#include "scan_lists.h"
-#include "payload.h"
+#include "osscan.h"       /* Escaneo de sistemas operativos */
+#include "scan_engine.h"  /* Motor principal de escaneo */
+#include "FPEngine.h"     /* Motor de huellas digitales */
+#include "idle_scan.h"    /* Implementación de escaneo idle */
+#include "NmapOps.h"      /* Opciones y configuración de Nmap */
+#include "MACLookup.h"    /* Búsqueda de direcciones MAC */
+#include "traceroute.h"   /* Implementación de traceroute */
+#include "nmap_tty.h"     /* Manejo de terminal */
+#include "nmap_ftp.h"     /* Funcionalidad FTP para escaneo rebote */
+#include "services.h"     /* Base de datos de servicios */
+#include "targets.h"      /* Manejo de objetivos de escaneo */
+#include "tcpip.h"        /* Funciones de nivel bajo TCP/IP */
+#include "NewTargets.h"   /* Administración dinámica de objetivos */
+#include "Target.h"       /* Clase Target */
+#include "service_scan.h" /* Escaneo de servicios */
+#include "charpool.h"     /* Pool de caracteres para optimización de memoria */
+#include "nmap_error.h"   /* Manejo de errores */
+#include "utils.h"        /* Funciones utilitarias */
+#include "xml.h"          /* Generación de salida XML */
+#include "scan_lists.h"   /* Listas de puertos y protocolos a escanear */
+#include "payload.h"      /* Manejo de cargas útiles para paquetes */
 
+/**
+ * Soporte para scripts NSE (Nmap Scripting Engine)
+ */
 #ifndef NOLUA
-#include "nse_main.h"
+#include "nse_main.h" /* Motor de scripting Lua */
 #endif
 
+/**
+ * Soporte para manejo de señales
+ */
 #ifdef HAVE_SIGNAL
 #include <signal.h>
 #endif
 
 #include <fcntl.h>
 
+/**
+ * Soporte para información de usuario en sistemas Unix
+ */
 #ifdef HAVE_PWD_H
 #include <pwd.h>
 #endif
 
+/**
+ * Definición de IPPROTO_SCTP si no está disponible
+ */
 #ifndef IPPROTO_SCTP
 #include "libnetutil/netutil.h"
 #endif
 
+/**
+ * Soporte para OpenSSL si está disponible
+ */
 #if HAVE_OPENSSL
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 #endif
 
+/**
+ * Soporte para libssh2 si está disponible (para escaneos SSH)
+ */
 #if HAVE_LIBSSH2
 #include <libssh2.h>
 #endif
 
+/**
+ * Soporte para compresión zlib si está disponible
+ */
 #if HAVE_LIBZ
 #include <zlib.h>
 #endif
 
-/* To get the version number only. */
+/**
+ * Inclusión de libdnet para obtener el número de versión
+ */
 #ifdef WIN32
 #include "libdnet-stripped/include/dnet_winconfig.h"
 #else
@@ -130,49 +163,81 @@
 #endif
 #define DNET_VERSION VERSION
 
+/**
+ * Detección de Windows Subsystem for Linux (WSL) en sistemas Linux
+ */
 #ifdef LINUX
-/* Check for Windows Subsystem for Linux (WSL) */
 #include <sys/utsname.h>
 #endif
 
+/**
+ * Inclusiones de la biblioteca estándar de C++
+ */
 #include <string>
 #include <sstream>
 #include <vector>
 
-/* global options */
-extern char *optarg;
-extern int optind;
-extern NmapOps o; /* option structure */
+/**
+ * Variables globales para el procesamiento de opciones
+ */
+extern char *optarg; /* Argumento de la opción actual */
+extern int optind;   /* Índice del siguiente argumento a procesar */
+extern NmapOps o;    /* Estructura de opciones global */
 
+/**
+ * @brief Muestra la información de versión de Nmap
+ */
 static void display_nmap_version();
 
-/* A mechanism to save argv[0] for code that requires that. */
+/**
+ * @brief Mecanismo para guardar argv[0] para código que lo requiera
+ */
 static const char *program_name = NULL;
 
+/**
+ * @brief Establece el nombre del programa
+ * @param name Nombre del programa a establecer
+ */
 void set_program_name(const char *name)
 {
   program_name = name;
 }
 
+/**
+ * @brief Obtiene el nombre del programa
+ * @return Puntero al nombre del programa
+ */
 static const char *get_program_name(void)
 {
   return program_name;
 }
 
-/* parse the --scanflags argument.  It can be a number >=0 or a string consisting of TCP flag names like "URGPSHFIN".  Returns -1 if the argument is invalid. */
+/**
+ * @brief Analiza el argumento --scanflags
+ *
+ * Esta función analiza el argumento proporcionado como flags de escaneo TCP.
+ * El argumento puede ser un número mayor o igual a 0, o una cadena que contenga
+ * nombres de flags TCP, como "URGPSHFIN".
+ *
+ * @param arg Cadena con los flags a analizar
+ * @return Valor de los flags o -1 si el argumento es inválido
+ */
 static int parse_scanflags(char *arg)
 {
-  int flagval = 0;
-  char *end = NULL;
+  int flagval = 0;  // Inicializa la variable de retorno
+  char *end = NULL; // Puntero para verificar el final de la conversión
 
+  // Comprueba si el argumento es un número
   if (isdigit((int)(unsigned char)arg[0]))
   {
-    flagval = strtol(arg, &end, 0);
+    flagval = strtol(arg, &end, 0); // Convierte la cadena a un número entero
+    // Verifica si la conversión falló o el valor está fuera del rango permitido
     if (*end || flagval < 0 || flagval > 255)
-      return -1;
+      return -1; // Retorna -1 si el argumento es inválido
   }
   else
   {
+    // Verifica y asigna los valores correspondientes a cada flag TCP
     if (strcasestr(arg, "FIN"))
       flagval |= TH_FIN;
     if (strcasestr(arg, "SYN"))
@@ -190,11 +255,11 @@ static int parse_scanflags(char *arg)
     if (strcasestr(arg, "CWR"))
       flagval |= TH_CWR;
     if (strcasestr(arg, "ALL"))
-      flagval = 255;
+      flagval = 255; // Asigna todos los flags si se especifica "ALL"
     if (strcasestr(arg, "NONE"))
-      flagval = 0;
+      flagval = 0; // No asigna ningún flag si se especifica "NONE"
   }
-  return flagval;
+  return flagval; // Retorna el valor de los flags
 }
 
 static void printusage()
@@ -210,113 +275,113 @@ static void printusage()
          "  --exclude <host1[,host2][,host3],...>: Excluir hosts/redes\n"
          "  --excludefile <exclude_file>: Lista de exclusión del archivo\n"
          "DESCUBRIMIENTO DEL HOST:\n"
-         "  -sL: List Scan - simplemente enumera los objetivos a escanear\n"
-         "  -sn: Ping Scan - desactivar el escaneo de puertos\n"
+         "  -sL: Escaneo de Listado - simplemente enumera los objetivos a escanear\n"
+         "  -sn: Escaneo Ping - desactivar el escaneo de puertos\n"
          "  -Pn: Tratar todos los hosts como en línea -- omitir la detección de hosts\n"
-         "  -PS/PA/PU/PY[portlist]: TCP SYN, TCP ACK, UDP or SCTP discovery to given ports\n"
-         "  -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes\n"
-         "  -PO[protocol list]: IP Protocol Ping\n"
-         "  -n/-R: Never do DNS resolution/Always resolve [default: sometimes]\n"
-         "  --dns-servers <serv1[,serv2],...>: Specify custom DNS servers\n"
-         "  --system-dns: Use OS's DNS resolver\n"
-         "  --traceroute: Trace hop path to each host\n"
-         "SCAN TECHNIQUES:\n"
-         "  -sS/sT/sA/sW/sM: TCP SYN/Connect()/ACK/Window/Maimon scans\n"
-         "  -sU: UDP Scan\n"
-         "  -sN/sF/sX: TCP Null, FIN, and Xmas scans\n"
-         "  --scanflags <flags>: Customize TCP scan flags\n"
-         "  -sI <zombie host[:probeport]>: Idle scan\n"
-         "  -sY/sZ: SCTP INIT/COOKIE-ECHO scans\n"
-         "  -sO: IP protocol scan\n"
-         "  -b <FTP relay host>: FTP bounce scan\n"
-         "PORT SPECIFICATION AND SCAN ORDER:\n"
-         "  -p <port ranges>: Only scan specified ports\n"
-         "    Ex: -p22; -p1-65535; -p U:53,111,137,T:21-25,80,139,8080,S:9\n"
-         "  --exclude-ports <port ranges>: Exclude the specified ports from scanning\n"
-         "  -F: Fast mode - Scan fewer ports than the default scan\n"
-         "  -r: Scan ports sequentially - don't randomize\n"
-         "  --top-ports <number>: Scan <number> most common ports\n"
-         "  --port-ratio <ratio>: Scan ports more common than <ratio>\n"
-         "SERVICE/VERSION DETECTION:\n"
-         "  -sV: Probe open ports to determine service/version info\n"
-         "  --version-intensity <level>: Set from 0 (light) to 9 (try all probes)\n"
-         "  --version-light: Limit to most likely probes (intensity 2)\n"
-         "  --version-all: Try every single probe (intensity 9)\n"
-         "  --version-trace: Show detailed version scan activity (for debugging)\n"
+         "  -PS/PA/PU/PY[portlist]: Descubrimiento TCP SYN, TCP ACK, UDP o SCTP en los puertos especificados\n"
+         "  -PE/PP/PM: Sondeos de descubrimiento ICMP echo, timestamp y netmask request\n"
+         "  -PO[protocol list]: Ping de Protocolo IP\n"
+         "  -n/-R: Nunca hacer resolución DNS/Siempre resolver [predeterminado: a veces]\n"
+         "  --dns-servers <serv1[,serv2],...>: Especificar servidores DNS personalizados\n"
+         "  --system-dns: Usar el resolvedor DNS del sistema operativo\n"
+         "  --traceroute: Rastrear ruta de saltos a cada host\n"
+         "TÉCNICAS DE ESCANEO:\n"
+         "  -sS/sT/sA/sW/sM: Escaneos TCP SYN/Connect()/ACK/Window/Maimon\n"
+         "  -sU: Escaneo UDP\n"
+         "  -sN/sF/sX: Escaneos TCP Null, FIN y Xmas\n"
+         "  --scanflags <flags>: Personalizar banderas de escaneo TCP\n"
+         "  -sI <zombie host[:probeport]>: Escaneo Idle\n"
+         "  -sY/sZ: Escaneos SCTP INIT/COOKIE-ECHO\n"
+         "  -sO: Escaneo de protocolo IP\n"
+         "  -b <FTP relay host>: Escaneo rebote FTP\n"
+         "ESPECIFICACIÓN DE PUERTOS Y ORDEN DE ESCANEO:\n"
+         "  -p <rangos de puertos>: Escanear solo los puertos especificados\n"
+         "    Ej: -p22; -p1-65535; -p U:53,111,137,T:21-25,80,139,8080,S:9\n"
+         "  --exclude-ports <rangos de puertos>: Excluir los puertos especificados del escaneo\n"
+         "  -F: Modo rápido - Escanear menos puertos que el escaneo predeterminado\n"
+         "  -r: Escanear puertos secuencialmente - no aleatorizar\n"
+         "  --top-ports <número>: Escanear los <número> puertos más comunes\n"
+         "  --port-ratio <ratio>: Escanear puertos más comunes que <ratio>\n"
+         "DETECCIÓN DE SERVICIO/VERSIÓN:\n"
+         "  -sV: Sondear puertos abiertos para determinar info de servicio/versión\n"
+         "  --version-intensity <nivel>: Establecer desde 0 (ligero) hasta 9 (probar todos los sondeos)\n"
+         "  --version-light: Limitar a los sondeos más probables (intensidad 2)\n"
+         "  --version-all: Probar cada sondeo individual (intensidad 9)\n"
+         "  --version-trace: Mostrar actividad detallada de escaneo de versión (para depuración)\n"
 #ifndef NOLUA
-         "SCRIPT SCAN:\n"
-         "  -sC: equivalent to --script=default\n"
-         "  --script=<Lua scripts>: <Lua scripts> is a comma separated list of\n"
-         "           directories, script-files or script-categories\n"
-         "  --script-args=<n1=v1,[n2=v2,...]>: provide arguments to scripts\n"
-         "  --script-args-file=filename: provide NSE script args in a file\n"
-         "  --script-trace: Show all data sent and received\n"
-         "  --script-updatedb: Update the script database.\n"
-         "  --script-help=<Lua scripts>: Show help about scripts.\n"
-         "           <Lua scripts> is a comma-separated list of script-files or\n"
-         "           script-categories.\n"
+         "ESCANEO DE SCRIPTS:\n"
+         "  -sC: equivalente a --script=default\n"
+         "  --script=<scripts Lua>: <scripts Lua> es una lista separada por comas de\n"
+         "           directorios, archivos de script o categorías de script\n"
+         "  --script-args=<n1=v1,[n2=v2,...]>: proporcionar argumentos a los scripts\n"
+         "  --script-args-file=filename: proporcionar argumentos de script NSE en un archivo\n"
+         "  --script-trace: Mostrar todos los datos enviados y recibidos\n"
+         "  --script-updatedb: Actualizar la base de datos de scripts\n"
+         "  --script-help=<scripts Lua>: Mostrar ayuda sobre scripts.\n"
+         "           <scripts Lua> es una lista separada por comas de archivos de script o\n"
+         "           categorías de script.\n"
 #endif
-         "OS DETECTION:\n"
-         "  -O: Enable OS detection\n"
-         "  --osscan-limit: Limit OS detection to promising targets\n"
-         "  --osscan-guess: Guess OS more aggressively\n"
-         "TIMING AND PERFORMANCE:\n"
-         "  Options which take <time> are in seconds, or append 'ms' (milliseconds),\n"
-         "  's' (seconds), 'm' (minutes), or 'h' (hours) to the value (e.g. 30m).\n"
-         "  -T<0-5>: Set timing template (higher is faster)\n"
-         "  --min-hostgroup/max-hostgroup <size>: Parallel host scan group sizes\n"
-         "  --min-parallelism/max-parallelism <numprobes>: Probe parallelization\n"
-         "  --min-rtt-timeout/max-rtt-timeout/initial-rtt-timeout <time>: Specifies\n"
-         "      probe round trip time.\n"
-         "  --max-retries <tries>: Caps number of port scan probe retransmissions.\n"
-         "  --host-timeout <time>: Give up on target after this long\n"
-         "  --scan-delay/--max-scan-delay <time>: Adjust delay between probes\n"
-         "  --min-rate <number>: Send packets no slower than <number> per second\n"
-         "  --max-rate <number>: Send packets no faster than <number> per second\n"
-         "FIREWALL/IDS EVASION AND SPOOFING:\n"
-         "  -f; --mtu <val>: fragment packets (optionally w/given MTU)\n"
-         "  -D <decoy1,decoy2[,ME],...>: Cloak a scan with decoys\n"
-         "  -S <IP_Address>: Spoof source address\n"
-         "  -e <iface>: Use specified interface\n"
-         "  -g/--source-port <portnum>: Use given port number\n"
-         "  --proxies <url1,[url2],...>: Relay connections through HTTP/SOCKS4 proxies\n"
-         "  --data <hex string>: Append a custom payload to sent packets\n"
-         "  --data-string <string>: Append a custom ASCII string to sent packets\n"
-         "  --data-length <num>: Append random data to sent packets\n"
-         "  --ip-options <options>: Send packets with specified ip options\n"
-         "  --ttl <val>: Set IP time-to-live field\n"
-         "  --spoof-mac <mac address/prefix/vendor name>: Spoof your MAC address\n"
-         "  --badsum: Send packets with a bogus TCP/UDP/SCTP checksum\n"
-         "OUTPUT:\n"
-         "  -oN/-oX/-oS/-oG <file>: Output scan in normal, XML, s|<rIpt kIddi3,\n"
-         "     and Grepable format, respectively, to the given filename.\n"
-         "  -oA <basename>: Output in the three major formats at once\n"
-         "  -v: Increase verbosity level (use -vv or more for greater effect)\n"
-         "  -d: Increase debugging level (use -dd or more for greater effect)\n"
-         "  --reason: Display the reason a port is in a particular state\n"
-         "  --open: Only show open (or possibly open) ports\n"
-         "  --packet-trace: Show all packets sent and received\n"
-         "  --iflist: Print host interfaces and routes (for debugging)\n"
-         "  --append-output: Append to rather than clobber specified output files\n"
-         "  --resume <filename>: Resume an aborted scan\n"
-         "  --noninteractive: Disable runtime interactions via keyboard\n"
-         "  --stylesheet <path/URL>: XSL stylesheet to transform XML output to HTML\n"
-         "  --webxml: Reference stylesheet from Nmap.Org for more portable XML\n"
-         "  --no-stylesheet: Prevent associating of XSL stylesheet w/XML output\n"
-         "MISC:\n"
-         "  -6: Enable IPv6 scanning\n"
-         "  -A: Enable OS detection, version detection, script scanning, and traceroute\n"
-         "  --datadir <dirname>: Specify custom Nmap data file location\n"
-         "  --send-eth/--send-ip: Send using raw ethernet frames or IP packets\n"
-         "  --privileged: Assume that the user is fully privileged\n"
-         "  --unprivileged: Assume the user lacks raw socket privileges\n"
-         "  -V: Print version number\n"
-         "  -h: Print this help summary page.\n"
-         "EXAMPLES:\n"
+         "DETECCIÓN DE SISTEMA OPERATIVO:\n"
+         "  -O: Habilitar detección de sistema operativo\n"
+         "  --osscan-limit: Limitar la detección de SO a objetivos prometedores\n"
+         "  --osscan-guess: Adivinar SO de manera más agresiva\n"
+         "TEMPORIZACIÓN Y RENDIMIENTO:\n"
+         "  Las opciones que toman <tiempo> están en segundos, o añadir 'ms' (milisegundos),\n"
+         "  's' (segundos), 'm' (minutos), o 'h' (horas) al valor (ej. 30m).\n"
+         "  -T<0-5>: Establecer plantilla de temporización (mayor es más rápido)\n"
+         "  --min-hostgroup/max-hostgroup <tamaño>: Tamaños de grupos de escaneo de host en paralelo\n"
+         "  --min-parallelism/max-parallelism <numprobes>: Paralelización de sondeos\n"
+         "  --min-rtt-timeout/max-rtt-timeout/initial-rtt-timeout <tiempo>: Especifica\n"
+         "      el tiempo de ida y vuelta del sondeo.\n"
+         "  --max-retries <intentos>: Limita número de retransmisiones de sondeo de escaneo de puertos.\n"
+         "  --host-timeout <tiempo>: Abandonar el objetivo después de este tiempo\n"
+         "  --scan-delay/--max-scan-delay <tiempo>: Ajustar retraso entre sondeos\n"
+         "  --min-rate <número>: Enviar paquetes no más lento que <número> por segundo\n"
+         "  --max-rate <número>: Enviar paquetes no más rápido que <número> por segundo\n"
+         "EVASIÓN DE FIREWALL/IDS Y SUPLANTACIÓN:\n"
+         "  -f; --mtu <val>: fragmentar paquetes (opcionalmente con MTU dado)\n"
+         "  -D <señuelo1,señuelo2[,YO],...>: Ocultar un escaneo con señuelos\n"
+         "  -S <Dirección_IP>: Suplantar dirección de origen\n"
+         "  -e <interfaz>: Usar interfaz especificada\n"
+         "  -g/--source-port <número de puerto>: Usar número de puerto dado\n"
+         "  --proxies <url1,[url2],...>: Transmitir conexiones a través de proxies HTTP/SOCKS4\n"
+         "  --data <cadena hexadecimal>: Añadir una carga útil personalizada a los paquetes enviados\n"
+         "  --data-string <cadena>: Añadir una cadena ASCII personalizada a los paquetes enviados\n"
+         "  --data-length <num>: Añadir datos aleatorios a los paquetes enviados\n"
+         "  --ip-options <opciones>: Enviar paquetes con opciones ip especificadas\n"
+         "  --ttl <val>: Establecer campo IP time-to-live\n"
+         "  --spoof-mac <dirección mac/prefijo/nombre de vendedor>: Suplantar tu dirección MAC\n"
+         "  --badsum: Enviar paquetes con un checksum TCP/UDP/SCTP falso\n"
+         "SALIDA:\n"
+         "  -oN/-oX/-oS/-oG <archivo>: Salida de escaneo en formato normal, XML, s|<rIpt kIddi3,\n"
+         "     y Grepable, respectivamente, al nombre de archivo dado.\n"
+         "  -oA <nombre base>: Salida en los tres formatos principales a la vez\n"
+         "  -v: Aumentar nivel de verbosidad (usar -vv o más para mayor efecto)\n"
+         "  -d: Aumentar nivel de depuración (usar -dd o más para mayor efecto)\n"
+         "  --reason: Mostrar la razón por la que un puerto está en un estado particular\n"
+         "  --open: Mostrar solo puertos abiertos (o posiblemente abiertos)\n"
+         "  --packet-trace: Mostrar todos los paquetes enviados y recibidos\n"
+         "  --iflist: Imprimir interfaces y rutas del host (para depuración)\n"
+         "  --append-output: Añadir en lugar de sobreescribir los archivos de salida especificados\n"
+         "  --resume <nombre de archivo>: Reanudar un escaneo abortado\n"
+         "  --noninteractive: Desactivar interacciones en tiempo de ejecución vía teclado\n"
+         "  --stylesheet <ruta/URL>: Hoja de estilo XSL para transformar salida XML a HTML\n"
+         "  --webxml: Referenciar hoja de estilo desde Nmap.Org para XML más portable\n"
+         "  --no-stylesheet: Evitar la asociación de hoja de estilo XSL con salida XML\n"
+         "MISCELÁNEA:\n"
+         "  -6: Habilitar escaneo IPv6\n"
+         "  -A: Habilitar detección de SO, detección de versión, escaneo de scripts y traceroute\n"
+         "  --datadir <nombre de directorio>: Especificar ubicación personalizada del archivo de datos Nmap\n"
+         "  --send-eth/--send-ip: Enviar usando tramas ethernet brutas o paquetes IP\n"
+         "  --privileged: Asumir que el usuario tiene privilegios completos\n"
+         "  --unprivileged: Asumir que el usuario carece de privilegios de socket bruto\n"
+         "  -V: Imprimir número de versión\n"
+         "  -h: Imprimir esta página de resumen de ayuda.\n"
+         "EJEMPLOS:\n"
          "  nmap -v -A scanme.nmap.org\n"
          "  nmap -v -sn 192.168.0.0/16 10.0.0.0/8\n"
          "  nmap -v -iR 10000 -Pn -p 80\n"
-         "SEE THE MAN PAGE (https://nmap.org/book/man.html) FOR MORE OPTIONS AND EXAMPLES\n",
+         "CONSULTA LA PÁGINA DEL MANUAL (https://nmap.org/book/man.html) PARA MÁS OPCIONES Y EJEMPLOS\n",
          NMAP_NAME, NMAP_VERSION, NMAP_URL);
 }
 

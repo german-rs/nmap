@@ -1,61 +1,60 @@
-
 /***************************************************************************
- * main.cc -- Contains the main() function of Nmap.  Note that main()      *
- * does very little except for calling nmap_main() (which is in nmap.cc)   *
+ * main.cc -- Contiene la función main() de Nmap. Nótese que main()        *
+ * hace muy poco excepto llamar a nmap_main() (que está en nmap.cc)        *
  *                                                                         *
- ***********************IMPORTANT NMAP LICENSE TERMS************************
+ ***********************TÉRMINOS IMPORTANTES DE LICENCIA DE NMAP*************
  *
- * The Nmap Security Scanner is (C) 1996-2025 Nmap Software LLC ("The Nmap
- * Project"). Nmap is also a registered trademark of the Nmap Project.
+ * El Escáner de Seguridad Nmap es (C) 1996-2025 Nmap Software LLC ("El Proyecto
+ * Nmap"). Nmap es también una marca registrada del Proyecto Nmap.
  *
- * This program is distributed under the terms of the Nmap Public Source
- * License (NPSL). The exact license text applying to a particular Nmap
- * release or source code control revision is contained in the LICENSE
- * file distributed with that version of Nmap or source code control
- * revision. More Nmap copyright/legal information is available from
- * https://nmap.org/book/man-legal.html, and further information on the
- * NPSL license itself can be found at https://nmap.org/npsl/ . This
- * header summarizes some key points from the Nmap license, but is no
- * substitute for the actual license text.
+ * Este programa se distribuye bajo los términos de la Licencia Pública de
+ * Código Fuente de Nmap (NPSL). El texto exacto de la licencia aplicable a una
+ * versión particular de Nmap o revisión de control de código fuente está contenido
+ * en el archivo LICENSE distribuido con esa versión de Nmap o revisión de control
+ * de código fuente. Más información sobre derechos de autor/legales de Nmap está
+ * disponible en https://nmap.org/book/man-legal.html, y más información sobre
+ * la licencia NPSL puede encontrarse en https://nmap.org/npsl/ . Este
+ * encabezado resume algunos puntos clave de la licencia de Nmap, pero no
+ * sustituye al texto real de la licencia.
  *
- * Nmap is generally free for end users to download and use themselves,
- * including commercial use. It is available from https://nmap.org.
+ * Nmap es generalmente gratuito para que los usuarios finales lo descarguen y
+ * lo usen, incluyendo uso comercial. Está disponible en https://nmap.org.
  *
- * The Nmap license generally prohibits companies from using and
- * redistributing Nmap in commercial products, but we sell a special Nmap
- * OEM Edition with a more permissive license and special features for
- * this purpose. See https://nmap.org/oem/
+ * La licencia de Nmap generalmente prohíbe a las empresas usar y
+ * redistribuir Nmap en productos comerciales, pero vendemos una edición especial
+ * Nmap OEM con una licencia más permisiva y características especiales para
+ * este propósito. Vea https://nmap.org/oem/
  *
- * If you have received a written Nmap license agreement or contract
- * stating terms other than these (such as an Nmap OEM license), you may
- * choose to use and redistribute Nmap under those terms instead.
+ * Si ha recibido un acuerdo de licencia escrito de Nmap o un contrato
+ * que establece términos distintos a estos (como una licencia OEM de Nmap), puede
+ * elegir usar y redistribuir Nmap bajo esos términos en su lugar.
  *
- * The official Nmap Windows builds include the Npcap software
- * (https://npcap.com) for packet capture and transmission. It is under
- * separate license terms which forbid redistribution without special
- * permission. So the official Nmap Windows builds may not be redistributed
- * without special permission (such as an Nmap OEM license).
+ * Las compilaciones oficiales de Nmap para Windows incluyen el software Npcap
+ * (https://npcap.com) para la captura y transmisión de paquetes. Está bajo
+ * términos de licencia separados que prohíben la redistribución sin permiso
+ * especial. Por lo tanto, las compilaciones oficiales de Nmap para Windows no pueden
+ * ser redistribuidas sin un permiso especial (como una licencia OEM de Nmap).
  *
- * Source is provided to this software because we believe users have a
- * right to know exactly what a program is going to do before they run it.
- * This also allows you to audit the software for security holes.
+ * Se proporciona el código fuente de este software porque creemos que los usuarios tienen
+ * derecho a saber exactamente qué va a hacer un programa antes de ejecutarlo.
+ * Esto también le permite auditar el software en busca de agujeros de seguridad.
  *
- * Source code also allows you to port Nmap to new platforms, fix bugs, and
- * add new features. You are highly encouraged to submit your changes as a
- * Github PR or by email to the dev@nmap.org mailing list for possible
- * incorporation into the main distribution. Unless you specify otherwise, it
- * is understood that you are offering us very broad rights to use your
- * submissions as described in the Nmap Public Source License Contributor
- * Agreement. This is important because we fund the project by selling licenses
- * with various terms, and also because the inability to relicense code has
- * caused devastating problems for other Free Software projects (such as KDE
- * and NASM).
+ * El código fuente también le permite portar Nmap a nuevas plataformas, corregir errores y
+ * añadir nuevas características. Se le anima encarecidamente a enviar sus cambios como un
+ * PR de Github o por correo electrónico a la lista de correo dev@nmap.org para su posible
+ * incorporación a la distribución principal. A menos que especifique lo contrario, se
+ * entiende que nos está ofreciendo derechos muy amplios para usar sus
+ * contribuciones como se describe en el Acuerdo de Contribución de la Licencia Pública
+ * de Código Fuente de Nmap. Esto es importante porque financiamos el proyecto vendiendo licencias
+ * con varios términos, y también porque la incapacidad de relicenciar código ha
+ * causado problemas devastadores para otros proyectos de Software Libre (como KDE
+ * y NASM).
  *
- * The free version of Nmap is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Warranties,
- * indemnification and commercial support are all available through the
- * Npcap OEM program--see https://nmap.org/oem/
+ * La versión gratuita de Nmap se distribuye con la esperanza de que sea
+ * útil, pero SIN NINGUNA GARANTÍA; ni siquiera la garantía implícita de
+ * COMERCIABILIDAD o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Las garantías,
+ * indemnizaciones y soporte comercial están disponibles a través del
+ * programa OEM de Npcap--vea https://nmap.org/oem/
  *
  ***************************************************************************/
 
