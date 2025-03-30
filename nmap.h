@@ -86,12 +86,12 @@
 #include <bstring.h>
 #endif
 
-/* Keep assert() defined for security reasons */
+/* Mantenga assert() definido por razones de seguridad */
 #undef NDEBUG
 
 #include <assert.h>
 
-/*#include <net/if_arp.h> *//* defines struct arphdr needed for if_ether.h */
+/*#include <net/if_arp.h> */ /* defines struct arphdr needed for if_ether.h */
 // #if HAVE_NET_IF_H
 // #ifndef NET_IF_H  /* why doesn't OpenBSD do this?! */
 // #include <net/if.h>
@@ -117,7 +117,7 @@
 #define NMAP_URL "https://nmap.org"
 
 #define _STR(X) #X
-#define STR(X)  _STR(X)
+#define STR(X) _STR(X)
 
 #ifndef NMAP_VERSION
 /* Edit this definition only within the quotes, because it is read from this
@@ -135,33 +135,33 @@
 #define NMAP_XMLOUTPUTVERSION "1.05"
 
 /* User configurable #defines: */
-#define MAX_PROBE_PORTS 10     /* How many TCP probe ports are allowed ? */
+#define MAX_PROBE_PORTS 10 /* How many TCP probe ports are allowed ? */
 /* Default number of ports in parallel.  Doesn't always involve actual
    sockets.  Can also adjust with the -M command line option.  */
 #define MAX_SOCKETS 36
 
-#define MAX_TIMEOUTS MAX_SOCKETS   /* How many timed out connection attempts
-                                      in a row before we decide the host is
-                                      dead? */
-#define DEFAULT_TCP_PROBE_PORT 80 /* The ports TCP ping probes go to if
-                                     unspecified by user -- uber hackers
+#define MAX_TIMEOUTS MAX_SOCKETS  /* How many timed out connection attempts \
+                                     in a row before we decide the host is  \
+                                     dead? */
+#define DEFAULT_TCP_PROBE_PORT 80 /* The ports TCP ping probes go to if  \
+                                     unspecified by user -- uber hackers \
                                      change this to 113 */
 #define DEFAULT_TCP_PROBE_PORT_SPEC STR(DEFAULT_TCP_PROBE_PORT)
-#define DEFAULT_UDP_PROBE_PORT 40125 /* The port UDP ping probes go to
+#define DEFAULT_UDP_PROBE_PORT 40125 /* The port UDP ping probes go to \
                                           if unspecified by user */
 #define DEFAULT_UDP_PROBE_PORT_SPEC STR(DEFAULT_UDP_PROBE_PORT)
-#define DEFAULT_SCTP_PROBE_PORT 80 /* The port SCTP probes go to
-                                      if unspecified by
+#define DEFAULT_SCTP_PROBE_PORT 80 /* The port SCTP probes go to \
+                                      if unspecified by          \
                                       user */
 #define DEFAULT_SCTP_PROBE_PORT_SPEC STR(DEFAULT_SCTP_PROBE_PORT)
-#define DEFAULT_PROTO_PROBE_PORT_SPEC "1,2,4" /* The IPProto ping probes to use
+#define DEFAULT_PROTO_PROBE_PORT_SPEC "1,2,4" /* The IPProto ping probes to use \
                                                  if unspecified by user */
 
 #define MAX_DECOYS 128 /* How many decoys are allowed? */
 
 /* TCP Options for TCP SYN probes: MSS 1460 */
 #define TCP_SYN_PROBE_OPTIONS "\x02\x04\x05\xb4"
-#define TCP_SYN_PROBE_OPTIONS_LEN (sizeof(TCP_SYN_PROBE_OPTIONS)-1)
+#define TCP_SYN_PROBE_OPTIONS_LEN (sizeof(TCP_SYN_PROBE_OPTIONS) - 1)
 
 /* Default maximum send delay between probes to the same host */
 #ifndef MAX_TCP_SCAN_DELAY
@@ -189,15 +189,15 @@
 #endif
 
 #ifndef MAX_RTT_TIMEOUT
-#define MAX_RTT_TIMEOUT 10000 /* Never allow more than 10 secs for packet round
+#define MAX_RTT_TIMEOUT 10000 /* Never allow more than 10 secs for packet round \
                                  trip */
 #endif
 
-#define INITIAL_RTT_TIMEOUT 1000 /* Allow 1 second initially for packet responses */
+#define INITIAL_RTT_TIMEOUT 1000    /* Allow 1 second initially for packet responses */
 #define INITIAL_ARP_RTT_TIMEOUT 200 /* The initial timeout for ARP is lower */
 
 #ifndef MAX_RETRANSMISSIONS
-#define MAX_RETRANSMISSIONS 10    /* 11 probes to port at maximum */
+#define MAX_RETRANSMISSIONS 10 /* 11 probes to port at maximum */
 #endif
 
 /* Number of hosts we pre-ping and then scan.  We do a lot more if
@@ -206,8 +206,8 @@
 #define PING_GROUP_SZ 4096
 
 /* DO NOT change stuff after this point */
-#define UC(b)   (((int)b)&0xff)
-#define SA    struct sockaddr  /*Ubertechnique from R. Stevens */
+#define UC(b) (((int)b) & 0xff)
+#define SA struct sockaddr /*Ubertechnique from R. Stevens */
 
 #define HOST_UNKNOWN 0
 #define HOST_UP 1
@@ -218,12 +218,12 @@
 #define PINGTYPE_ICMP_PING 2
 #define PINGTYPE_ICMP_MASK 4
 #define PINGTYPE_ICMP_TS 8
-#define PINGTYPE_TCP  16
+#define PINGTYPE_TCP 16
 #define PINGTYPE_TCP_USE_ACK 32
 #define PINGTYPE_TCP_USE_SYN 64
 /* # define PINGTYPE_RAWTCP 128 used to be here, but was never used. */
 #define PINGTYPE_CONNECTTCP 256
-#define PINGTYPE_UDP  512
+#define PINGTYPE_UDP 512
 /* #define PINGTYPE_ARP 1024 // Not used; see o.implicitARPPing */
 #define PINGTYPE_PROTO 2048
 #define PINGTYPE_SCTP_INIT 4096
@@ -235,8 +235,8 @@
      -PE -PA80 -PS443 -PP
      -PE -PA80 -PS443 -PP -PU40125
    We use the four-probe combination. */
-#define DEFAULT_IPV4_PING_TYPES (PINGTYPE_ICMP_PING|PINGTYPE_TCP|PINGTYPE_TCP_USE_ACK|PINGTYPE_TCP_USE_SYN|PINGTYPE_ICMP_TS)
-#define DEFAULT_IPV6_PING_TYPES (PINGTYPE_ICMP_PING|PINGTYPE_TCP|PINGTYPE_TCP_USE_ACK|PINGTYPE_TCP_USE_SYN)
+#define DEFAULT_IPV4_PING_TYPES (PINGTYPE_ICMP_PING | PINGTYPE_TCP | PINGTYPE_TCP_USE_ACK | PINGTYPE_TCP_USE_SYN | PINGTYPE_ICMP_TS)
+#define DEFAULT_IPV6_PING_TYPES (PINGTYPE_ICMP_PING | PINGTYPE_TCP | PINGTYPE_TCP_USE_ACK | PINGTYPE_TCP_USE_SYN)
 #define DEFAULT_PING_ACK_PORT_SPEC "80"
 #define DEFAULT_PING_SYN_PORT_SPEC "443"
 /* For nonroot. */
@@ -251,10 +251,10 @@
 
 /* Max payload: Worst case is IPv4 with 40bytes of options and TCP with 20
  * bytes of options. */
-#define MAX_PAYLOAD_ALLOWED 65535-60-40
+#define MAX_PAYLOAD_ALLOWED 65535 - 60 - 40
 
 #ifndef recvfrom6_t
-#  define recvfrom6_t int
+#define recvfrom6_t int
 #endif
 
 /***********************PROTOTYPES**********************************/
@@ -266,4 +266,3 @@ int nmap_fetchfile(char *filename_returned, int bufferlen, const char *file);
 int gather_logfile_resumption_state(char *fname, int *myargc, char ***myargv);
 
 #endif /* NMAP_H */
-
