@@ -1,61 +1,63 @@
 /***************************************************************************
- * nmap.h -- Currently handles some of Nmap's port scanning features as    *
- * well as the command line user interface.  Note that the actual main()   *
- * function is in main.c                                                   *
+ * nmap.h -- Actualmente maneja algunas de las características de escaneo   *
+ * de puertos de Nmap, así como la interfaz de línea de comandos para el   *
+ * usuario. Tenga en cuenta que la función main() real está en main.c      *
  *                                                                         *
- ***********************IMPORTANT NMAP LICENSE TERMS************************
+ ***********************TÉRMINOS IMPORTANTES DE LICENCIA DE NMAP*************
  *
- * The Nmap Security Scanner is (C) 1996-2025 Nmap Software LLC ("The Nmap
- * Project"). Nmap is also a registered trademark of the Nmap Project.
+ * El Escáner de Seguridad Nmap es (C) 1996-2025 Nmap Software LLC ("El Proyecto
+ * Nmap"). Nmap también es una marca registrada del Proyecto Nmap.
  *
- * This program is distributed under the terms of the Nmap Public Source
- * License (NPSL). The exact license text applying to a particular Nmap
- * release or source code control revision is contained in the LICENSE
- * file distributed with that version of Nmap or source code control
- * revision. More Nmap copyright/legal information is available from
- * https://nmap.org/book/man-legal.html, and further information on the
- * NPSL license itself can be found at https://nmap.org/npsl/ . This
- * header summarizes some key points from the Nmap license, but is no
- * substitute for the actual license text.
+ * Este programa se distribuye bajo los términos de la Licencia Pública de
+ * Código Fuente de Nmap (NPSL). El texto exacto de la licencia que aplica a una
+ * versión particular de Nmap o revisión del control de código fuente está
+ * contenido en el archivo LICENSE distribuido con esa versión de Nmap o
+ * revisión del control de código fuente. Más información sobre derechos de
+ * autor/legal de Nmap está disponible en https://nmap.org/book/man-legal.html,
+ * y más información sobre la licencia NPSL se puede encontrar en
+ * https://nmap.org/npsl/. Este encabezado resume algunos puntos clave de la
+ * licencia de Nmap, pero no sustituye al texto real de la licencia.
  *
- * Nmap is generally free for end users to download and use themselves,
- * including commercial use. It is available from https://nmap.org.
+ * Nmap es generalmente gratuito para que los usuarios finales lo descarguen
+ * y lo utilicen, incluso para uso comercial. Está disponible en https://nmap.org.
  *
- * The Nmap license generally prohibits companies from using and
- * redistributing Nmap in commercial products, but we sell a special Nmap
- * OEM Edition with a more permissive license and special features for
- * this purpose. See https://nmap.org/oem/
+ * La licencia de Nmap generalmente prohíbe a las empresas usar y redistribuir
+ * Nmap en productos comerciales, pero vendemos una Edición OEM especial de
+ * Nmap con una licencia más permisiva y características especiales para este
+ * propósito. Consulte https://nmap.org/oem/
  *
- * If you have received a written Nmap license agreement or contract
- * stating terms other than these (such as an Nmap OEM license), you may
- * choose to use and redistribute Nmap under those terms instead.
+ * Si ha recibido un acuerdo de licencia escrito de Nmap o un contrato que
+ * establece términos diferentes a estos (como una licencia OEM de Nmap), puede
+ * optar por usar y redistribuir Nmap bajo esos términos en su lugar.
  *
- * The official Nmap Windows builds include the Npcap software
- * (https://npcap.com) for packet capture and transmission. It is under
- * separate license terms which forbid redistribution without special
- * permission. So the official Nmap Windows builds may not be redistributed
- * without special permission (such as an Nmap OEM license).
+ * Las compilaciones oficiales de Nmap para Windows incluyen el software Npcap
+ * (https://npcap.com) para la captura y transmisión de paquetes. Está bajo
+ * términos de licencia separados que prohíben la redistribución sin permiso
+ * especial. Por lo tanto, las compilaciones oficiales de Nmap para Windows no
+ * pueden redistribuirse sin permiso especial (como una licencia OEM de Nmap).
  *
- * Source is provided to this software because we believe users have a
- * right to know exactly what a program is going to do before they run it.
- * This also allows you to audit the software for security holes.
+ * El código fuente se proporciona para este software porque creemos que los
+ * usuarios tienen derecho a saber exactamente qué va a hacer un programa
+ * antes de ejecutarlo. Esto también le permite auditar el software en busca
+ * de vulnerabilidades de seguridad.
  *
- * Source code also allows you to port Nmap to new platforms, fix bugs, and
- * add new features. You are highly encouraged to submit your changes as a
- * Github PR or by email to the dev@nmap.org mailing list for possible
- * incorporation into the main distribution. Unless you specify otherwise, it
- * is understood that you are offering us very broad rights to use your
- * submissions as described in the Nmap Public Source License Contributor
- * Agreement. This is important because we fund the project by selling licenses
- * with various terms, and also because the inability to relicense code has
- * caused devastating problems for other Free Software projects (such as KDE
- * and NASM).
+ * El código fuente también le permite portar Nmap a nuevas plataformas,
+ * corregir errores y agregar nuevas características. Se le anima enormemente
+ * a enviar sus cambios como PR de Github o por correo electrónico a la lista
+ * de correo dev@nmap.org para su posible incorporación a la distribución
+ * principal. A menos que especifique lo contrario, se entiende que nos está
+ * ofreciendo derechos muy amplios para usar sus envíos como se describe en
+ * el Acuerdo de Contribución de la Licencia Pública de Código Fuente de Nmap.
+ * Esto es importante porque financiamos el proyecto vendiendo licencias con
+ * varios términos, y también porque la incapacidad de relicenciar código ha
+ * causado problemas devastadores para otros proyectos de Software Libre
+ * (como KDE y NASM).
  *
- * The free version of Nmap is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Warranties,
- * indemnification and commercial support are all available through the
- * Npcap OEM program--see https://nmap.org/oem/
+ * La versión gratuita de Nmap se distribuye con la esperanza de que sea
+ * útil, pero SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de
+ * COMERCIABILIDAD o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Las garantías,
+ * indemnización y soporte comercial están disponibles a través del programa
+ * OEM de Npcap--consulte https://nmap.org/oem/
  *
  ***************************************************************************/
 
@@ -105,65 +107,74 @@
 // #endif /* NETINET_IF_ETHER_H */
 // #endif /* HAVE_NETINET_IF_ETHER_H */
 
-/*******  DEFINES  ************/
+/******* DEFINICIONES ************/
 
 #ifdef NMAP_OEM
 #include "../nmap-build/nmap-oem.h"
 #endif
 
+/* Nombre por defecto si no está definido */
 #ifndef NMAP_NAME
 #define NMAP_NAME "Nmap"
 #endif
 #define NMAP_URL "https://nmap.org"
 
+/* Macros para convertir valores a cadenas */
 #define _STR(X) #X
 #define STR(X) _STR(X)
 
+/* Definición de versiones si no están especificadas */
 #ifndef NMAP_VERSION
-/* Edit this definition only within the quotes, because it is read from this
-   file by the makefiles. */
-#define NMAP_MAJOR 7
-#define NMAP_MINOR 95
-#define NMAP_BUILD 1
+/* Editar esta definición solo dentro de las comillas, ya que es leída
+   por los makefiles */
+#define NMAP_MAJOR 7  /* Versión mayor */
+#define NMAP_MINOR 95 /* Versión menor */
+#define NMAP_BUILD 1  /* Número de compilación */
 /* SVN, BETA, etc. */
 #define NMAP_SPECIAL "SVN"
 
+/* Construcción de cadenas de versión */
 #define NMAP_VERSION STR(NMAP_MAJOR) "." STR(NMAP_MINOR) NMAP_SPECIAL
 #define NMAP_NUM_VERSION STR(NMAP_MAJOR) "." STR(NMAP_MINOR) "." STR(NMAP_BUILD) ".0"
 #endif
 
+/* Versión del formato de salida XML */
 #define NMAP_XMLOUTPUTVERSION "1.05"
 
-/* User configurable #defines: */
-#define MAX_PROBE_PORTS 10 /* How many TCP probe ports are allowed ? */
-/* Default number of ports in parallel.  Doesn't always involve actual
-   sockets.  Can also adjust with the -M command line option.  */
+/* Definiciones configurables por el usuario: */
+#define MAX_PROBE_PORTS 10 /* Número máximo de puertos TCP de sondeo permitidos */
+
+/* Número predeterminado de puertos en paralelo. No siempre involucra sockets reales.
+   Se puede ajustar con la opción -M en línea de comandos. */
 #define MAX_SOCKETS 36
 
-#define MAX_TIMEOUTS MAX_SOCKETS  /* How many timed out connection attempts \
-                                     in a row before we decide the host is  \
-                                     dead? */
-#define DEFAULT_TCP_PROBE_PORT 80 /* The ports TCP ping probes go to if  \
-                                     unspecified by user -- uber hackers \
-                                     change this to 113 */
+/* Número máximo de intentos de conexión que agotan el tiempo de espera
+   antes de decidir que el host está caído */
+#define MAX_TIMEOUTS MAX_SOCKETS
+
+/* Puerto predeterminado para sondeos TCP si no se especifica por el usuario */
+#define DEFAULT_TCP_PROBE_PORT 80
 #define DEFAULT_TCP_PROBE_PORT_SPEC STR(DEFAULT_TCP_PROBE_PORT)
-#define DEFAULT_UDP_PROBE_PORT 40125 /* The port UDP ping probes go to \
-                                          if unspecified by user */
+
+/* Puerto predeterminado para sondeos UDP */
+#define DEFAULT_UDP_PROBE_PORT 40125
 #define DEFAULT_UDP_PROBE_PORT_SPEC STR(DEFAULT_UDP_PROBE_PORT)
-#define DEFAULT_SCTP_PROBE_PORT 80 /* The port SCTP probes go to \
-                                      if unspecified by          \
-                                      user */
+
+/* Puerto predeterminado para sondeos SCTP */
+#define DEFAULT_SCTP_PROBE_PORT 80
 #define DEFAULT_SCTP_PROBE_PORT_SPEC STR(DEFAULT_SCTP_PROBE_PORT)
-#define DEFAULT_PROTO_PROBE_PORT_SPEC "1,2,4" /* The IPProto ping probes to use \
-                                                 if unspecified by user */
 
-#define MAX_DECOYS 128 /* How many decoys are allowed? */
+/* Sondeos IPProto predeterminados si no se especifican */
+#define DEFAULT_PROTO_PROBE_PORT_SPEC "1,2,4"
 
-/* TCP Options for TCP SYN probes: MSS 1460 */
+/* Número máximo de señuelos permitidos */
+#define MAX_DECOYS 128
+
+/* Opciones TCP para sondeos TCP SYN: MSS 1460 */
 #define TCP_SYN_PROBE_OPTIONS "\x02\x04\x05\xb4"
 #define TCP_SYN_PROBE_OPTIONS_LEN (sizeof(TCP_SYN_PROBE_OPTIONS) - 1)
 
-/* Default maximum send delay between probes to the same host */
+/* Retardos máximos predeterminados entre sondeos al mismo host */
 #ifndef MAX_TCP_SCAN_DELAY
 #define MAX_TCP_SCAN_DELAY 1000
 #endif
@@ -176,43 +187,41 @@
 #define MAX_SCTP_SCAN_DELAY 1000
 #endif
 
-/* Maximum number of extra hostnames, OSs, and devices, we
-   consider when outputting the extra service info fields */
+/* Número máximo de campos de información extra de servicio */
 #define MAX_SERVICE_INFO_FIELDS 5
 
-/* We wait at least 100 ms for a response by default - while that
-   seems aggressive, waiting too long can cause us to fail to detect
-   drops until many probes later on extremely low-latency
-   networks (such as localhost scans).  */
+/* Tiempos de espera mínimo y máximo para respuestas */
 #ifndef MIN_RTT_TIMEOUT
 #define MIN_RTT_TIMEOUT 100
 #endif
 
 #ifndef MAX_RTT_TIMEOUT
-#define MAX_RTT_TIMEOUT 10000 /* Never allow more than 10 secs for packet round \
-                                 trip */
+#define MAX_RTT_TIMEOUT 10000 /* Nunca permitir más de 10 segundos para el viaje de ida y vuelta */
 #endif
 
-#define INITIAL_RTT_TIMEOUT 1000    /* Allow 1 second initially for packet responses */
-#define INITIAL_ARP_RTT_TIMEOUT 200 /* The initial timeout for ARP is lower */
+/* Tiempos de espera iniciales */
+#define INITIAL_RTT_TIMEOUT 1000    /* 1 segundo inicial para respuestas */
+#define INITIAL_ARP_RTT_TIMEOUT 200 /* Tiempo inicial más bajo para ARP */
 
+/* Número máximo de retransmisiones */
 #ifndef MAX_RETRANSMISSIONS
-#define MAX_RETRANSMISSIONS 10 /* 11 probes to port at maximum */
+#define MAX_RETRANSMISSIONS 10 /* Máximo 11 sondeos por puerto */
 #endif
 
-/* Number of hosts we pre-ping and then scan.  We do a lot more if
-   randomize_hosts is set.  Every one you add to this leads to ~1K of
-   extra always-resident memory in nmap */
+/* Tamaño del grupo de hosts para pre-ping */
 #define PING_GROUP_SZ 4096
 
-/* DO NOT change stuff after this point */
+/* NO MODIFICAR nada después de este punto */
+/* Macros y definiciones de utilidad */
 #define UC(b) (((int)b) & 0xff)
-#define SA struct sockaddr /*Ubertechnique from R. Stevens */
+#define SA struct sockaddr /* Técnica de R. Stevens */
 
+/* Estados de host */
 #define HOST_UNKNOWN 0
 #define HOST_UP 1
 #define HOST_DOWN 2
 
+/* Tipos de ping */
 #define PINGTYPE_UNKNOWN 0
 #define PINGTYPE_NONE 1
 #define PINGTYPE_ICMP_PING 2
@@ -228,40 +237,39 @@
 #define PINGTYPE_PROTO 2048
 #define PINGTYPE_SCTP_INIT 4096
 
-/* Empirically determined optimum combinations of different numbers of probes:
+/* Combinaciones óptimas determinadas empíricamente para diferentes tipos de sondeo:
      -PE
      -PE -PA80
      -PE -PA80 -PS443
      -PE -PA80 -PS443 -PP
      -PE -PA80 -PS443 -PP -PU40125
-   We use the four-probe combination. */
+   Utilizamos la combinación de cuatro sondas. */
 #define DEFAULT_IPV4_PING_TYPES (PINGTYPE_ICMP_PING | PINGTYPE_TCP | PINGTYPE_TCP_USE_ACK | PINGTYPE_TCP_USE_SYN | PINGTYPE_ICMP_TS)
 #define DEFAULT_IPV6_PING_TYPES (PINGTYPE_ICMP_PING | PINGTYPE_TCP | PINGTYPE_TCP_USE_ACK | PINGTYPE_TCP_USE_SYN)
 #define DEFAULT_PING_ACK_PORT_SPEC "80"
 #define DEFAULT_PING_SYN_PORT_SPEC "443"
-/* For nonroot. */
+/* Para no raíz. */
 #define DEFAULT_PING_CONNECT_PORT_SPEC "80,443"
 
-/* The max length of each line of the subject fingerprint when
-   wrapped. */
+/* Longitud máxima de línea para huella digital */
 #define FP_RESULT_WRAP_LINE_LEN 74
 
-/* Length of longest DNS name */
+/* Longitud máxima de nombre DNS */
 #define FQDN_LEN 254
 
-/* Max payload: Worst case is IPv4 with 40bytes of options and TCP with 20
- * bytes of options. */
+/* Carga útil máxima considerando IPv4 con 40 bytes de opciones y TCP con 20 bytes de opciones */
 #define MAX_PAYLOAD_ALLOWED 65535 - 60 - 40
 
 #ifndef recvfrom6_t
 #define recvfrom6_t int
 #endif
 
-/***********************PROTOTYPES**********************************/
+/***********************PROTOTIPOS**********************************/
 
-/* Renamed main so that interactive mode could preprocess when necessary */
+/* Renombrado main para que el modo interactivo pueda preprocesar cuando sea necesario */
 int nmap_main(int argc, char *argv[]);
 
+/* Funciones de utilidad */
 int nmap_fetchfile(char *filename_returned, int bufferlen, const char *file);
 int gather_logfile_resumption_state(char *fname, int *myargc, char ***myargv);
 
