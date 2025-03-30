@@ -61,111 +61,186 @@
 
 /* $Id$ */
 
+/**
+ * @file main.c
+ * @brief Punto de entrada principal para la aplicación Nmap
+ *
+ * Este archivo contiene la función principal (main) que inicializa la aplicación Nmap.
+ * Se encarga de procesar argumentos de línea de comandos, variables de entorno y
+ * la funcionalidad de reanudación de escaneos.
+ */
+
+/**
+ * Inclusión de cabeceras de sistema para manejo de señales y configuración regional
+ */
 #include <signal.h>
 #include <locale.h>
 
-#include "nmap.h"
-#include "NmapOps.h"
-#include "utils.h"
-#include "nmap_error.h"
+/**
+ * Inclusión de cabeceras propias de Nmap
+ */
+#include "nmap.h"       // Funcionalidad principal de Nmap
+#include "NmapOps.h"    // Estructura de opciones de Nmap
+#include "utils.h"      // Funciones de utilidad
+#include "nmap_error.h" // Gestión de errores
 
+/**
+ * Inclusión condicional para depuración de memoria
+ */
 #ifdef MTRACE
 #include "mcheck.h"
 #endif
 
+/**
+ * Soporte específico para sistemas AmigaOS
+ */
 #ifdef __amigaos__
-#include <proto/exec.h>
-#include <proto/dos.h>
-#include "nmap_amigaos.h"
-struct Library *SocketBase = NULL, *MiamiBase = NULL, *MiamiBPFBase = NULL, *MiamiPCapBase = NULL;
-static const char ver[] = "$VER:" NMAP_NAME " v"NMAP_VERSION " [Amiga.sf]";
+#include <proto/exec.h>   // Funciones del sistema ejecutivo de Amiga
+#include <proto/dos.h>    // Funciones DOS de Amiga
+#include "nmap_amigaos.h" // Funcionalidad específica de Nmap para AmigaOS
 
-static void CloseLibs(void) {
-  if (MiamiPCapBase ) CloseLibrary( MiamiPCapBase );
-  if (MiamiBPFBase  ) CloseLibrary(  MiamiBPFBase );
-  if ( SocketBase   ) CloseLibrary(   SocketBase  );
-  if (  MiamiBase   ) CloseLibrary(   MiamiBase   );
+/**
+ * Bases de bibliotecas necesarias para la pila TCP/IP en AmigaOS
+ */
+struct Library *SocketBase = NULL, *MiamiBase = NULL, *MiamiBPFBase = NULL, *MiamiPCapBase = NULL;
+static const char ver[] = "$VER:" NMAP_NAME " v" NMAP_VERSION " [Amiga.sf]";
+
+/**
+ * @brief Cierra las bibliotecas utilizadas en AmigaOS
+ *
+ * Esta función se registra con atexit() para asegurar que las bibliotecas
+ * se cierren adecuadamente al finalizar el programa.
+ */
+static void CloseLibs(void)
+{
+  if (MiamiPCapBase)
+    CloseLibrary(MiamiPCapBase);
+  if (MiamiBPFBase)
+    CloseLibrary(MiamiBPFBase);
+  if (SocketBase)
+    CloseLibrary(SocketBase);
+  if (MiamiBase)
+    CloseLibrary(MiamiBase);
 }
 
-static BOOL OpenLibs(void) {
- if(!(    MiamiBase = OpenLibrary(MIAMINAME,21))) return FALSE;
- if(!(   SocketBase = OpenLibrary("bsdsocket.library", 4))) return FALSE;
- if(!( MiamiBPFBase = OpenLibrary(MIAMIBPFNAME,3))) return FALSE;
- if(!(MiamiPCapBase = OpenLibrary(MIAMIPCAPNAME,5))) return FALSE;
- atexit(CloseLibs);
- return TRUE;
+/**
+ * @brief Abre las bibliotecas necesarias para la pila TCP/IP en AmigaOS
+ *
+ * @return BOOL TRUE si todas las bibliotecas se abrieron correctamente, FALSE en caso contrario
+ */
+static BOOL OpenLibs(void)
+{
+  if (!(MiamiBase = OpenLibrary(MIAMINAME, 21)))
+    return FALSE;
+  if (!(SocketBase = OpenLibrary("bsdsocket.library", 4)))
+    return FALSE;
+  if (!(MiamiBPFBase = OpenLibrary(MIAMIBPFNAME, 3)))
+    return FALSE;
+  if (!(MiamiPCapBase = OpenLibrary(MIAMIPCAPNAME, 5)))
+    return FALSE;
+  atexit(CloseLibs);
+  return TRUE;
 }
 #endif
 
-/* global options */
-extern NmapOps o;  /* option structure */
+/**
+ * Declaración de variables globales
+ */
+extern NmapOps o; /* Estructura de opciones global */
 
+/**
+ * Declaración de funciones externas
+ */
 extern void set_program_name(const char *name);
 
-int main(int argc, char *argv[]) {
-  /* The "real" main is nmap_main().  This function hijacks control at the
-     beginning to do the following:
-     1) Check the environment variable NMAP_ARGS.
-     2) Check if Nmap was called with --resume.
-     3) Resume a previous scan or just call nmap_main.
-  */
-  char command[2048];
-  int myargc;
-  char **myargv = NULL;
-  char *cptr;
-  int ret;
-  int i;
+/**
+ * @brief Función principal del programa
+ *
+ * Esta función realiza las siguientes tareas:
+ * 1) Verifica la variable de entorno NMAP_ARGS
+ * 2) Comprueba si Nmap fue llamado con la opción --resume
+ * 3) Reanuda un escaneo previo o simplemente llama a nmap_main
+ *
+ * @param argc Número de argumentos de línea de comandos
+ * @param argv Vector de argumentos de línea de comandos
+ * @return int Código de salida del programa
+ */
+int main(int argc, char *argv[])
+{
+  char command[2048];   // Buffer para almacenar comandos
+  int myargc;           // Contador de argumentos procesados
+  char **myargv = NULL; // Vector de argumentos procesados
+  char *cptr;           // Puntero auxiliar para procesamiento de cadenas
+  int ret;              // Valor de retorno
+  int i;                // Variable de iteración
 
+  // Configura la localización regional
   o.locale = strdup(setlocale(LC_CTYPE, NULL));
   set_program_name(argv[0]);
 
 #ifdef __amigaos__
-        if(!OpenLibs()) {
-                error("Couldn't open TCP/IP Stack Library(s)!");
-                exit(20);
-        }
-        MiamiBPFInit((struct Library *)MiamiBase, (struct Library *)SocketBase);
-        MiamiPCapInit((struct Library *)MiamiBase, (struct Library *)SocketBase);
+  // Inicialización específica para AmigaOS
+  if (!OpenLibs())
+  {
+    error("Couldn't open TCP/IP Stack Library(s)!");
+    exit(20);
+  }
+  MiamiBPFInit((struct Library *)MiamiBase, (struct Library *)SocketBase);
+  MiamiPCapInit((struct Library *)MiamiBase, (struct Library *)SocketBase);
 #endif
 
 #ifdef MTRACE
-  // This glibc extension enables memory tracing to detect memory
-  // leaks, frees of unallocated memory, etc.
-  // See http://www.gnu.org/manual/glibc-2.2.5/html_node/Allocation-Debugging.html#Allocation%20Debugging .
-  // It only works if the environment variable MALLOC_TRACE is set to a file
-  // which a memory usage log will be written to.  After the program quits
-  // I can analyze the log via the command 'mtrace [binaryiran] [logfile]'
-  // MTRACE should only be defined during debug sessions.
+  // Esta extensión de glibc habilita el rastreo de memoria para detectar
+  // fugas de memoria, liberaciones de memoria no asignada, etc.
+  // Ver http://www.gnu.org/manual/glibc-2.2.5/html_node/Allocation-Debugging.html
+  // Solo funciona si la variable de entorno MALLOC_TRACE está configurada a un archivo
+  // donde se escribirá un registro de uso de memoria. Después de que el programa finalice,
+  // se puede analizar el registro mediante el comando 'mtrace [ejecutable] [archivo_log]'
+  // MTRACE solo debe definirse durante sesiones de depuración.
   mtrace();
 #endif
 
-  if ((cptr = getenv("NMAP_ARGS"))) {
-    if (Snprintf(command, sizeof(command), "nmap %s", cptr) >= (int) sizeof(command)) {
-        error("Warning: NMAP_ARGS variable is too long, truncated");
+  // Comprueba la variable de entorno NMAP_ARGS
+  if ((cptr = getenv("NMAP_ARGS")))
+  {
+    // Construye la línea de comando completa
+    if (Snprintf(command, sizeof(command), "nmap %s", cptr) >= (int)sizeof(command))
+    {
+      error("Advertencia: La variable NMAP_ARGS es demasiado larga, truncada");
     }
-    /* copy rest of command-line arguments */
-    for (i = 1; i < argc && strlen(command) + strlen(argv[i]) + 1 < sizeof(command); i++) {
+
+    // Añade el resto de argumentos de la línea de comandos
+    for (i = 1; i < argc && strlen(command) + strlen(argv[i]) + 1 < sizeof(command); i++)
+    {
       strcat(command, " ");
       strcat(command, argv[i]);
     }
+
+    // Analiza la línea de comandos construida
     myargc = arg_parse(command, &myargv);
-    if (myargc < 1) {
-      fatal("NMAP_ARGS variable could not be parsed");
+    if (myargc < 1)
+    {
+      fatal("No se ha podido analizar la variable NMAP_ARGS");
     }
+
+    // Ejecuta nmap_main con los argumentos procesados
     ret = nmap_main(myargc, myargv);
     arg_parse_free(myargv);
     return ret;
   }
 
-  if (argc == 3 && strcmp("--resume", argv[1]) == 0) {
-    /* OK, they want to resume an aborted scan given the log file specified.
-       Lets gather our state from the log file */
-    if (gather_logfile_resumption_state(argv[2], &myargc, &myargv) == -1) {
-      fatal("Cannot resume from (supposed) log file %s", argv[2]);
+  // Manejo de la opción --resume
+  if (argc == 3 && strcmp("--resume", argv[1]) == 0)
+  {
+    // Intenta reanudar un escaneo abortado utilizando el archivo de registro especificado
+    if (gather_logfile_resumption_state(argv[2], &myargc, &myargv) == -1)
+    {
+      fatal("No se puede reanudar desde un (supuesto) archivo de registro %s", argv[2]);
     }
     o.resuming = true;
     return nmap_main(myargc, myargv);
   }
 
+  // Si no hay opciones especiales, ejecuta nmap_main directamente
   return nmap_main(argc, argv);
 }
