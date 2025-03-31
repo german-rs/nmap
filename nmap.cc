@@ -386,27 +386,44 @@ static void printusage()
 }
 
 #ifdef WIN32
+
+/*
+ * Función auxiliar para verificar privilegios en Windows
+ * En Windows esta función está vacía ya que la verificación
+ * se hace de otra manera
+ */
 static void check_setugid(void)
 {
 }
 #else
-/* Show a warning when running setuid or setgid, as this allows code execution
-   (for example NSE scripts) as the owner/group. */
+
+/*
+ * Muestra una advertencia cuando se ejecuta con setuid o setgid
+ * ya que esto permite la ejecución de código (por ejemplo scripts NSE)
+ * como el propietario/grupo.
+ */
 static void check_setugid(void)
 {
   if (getuid() != geteuid())
-    error("WARNING: Running Nmap setuid, as you are doing, is a major security risk.\n");
+    error("ADVERTENCIA: Ejecutar Nmap con setuid, como está haciendo, representa un alto riesgo de seguridad.\n");
   if (getgid() != getegid())
-    error("WARNING: Running Nmap setgid, as you are doing, is a major security risk.\n");
+    error("ADVERTENCIA: Ejecutar Nmap con setgid, como está haciendo, representa un alto riesgo de seguridad.\n");
 }
 #endif
 
+/*
+ * Inserta un puerto en la lista de fusión si no existe ya
+ * Parámetros:
+ *   mlist - Lista de puertos objetivo
+ *   merged_port_count - Contador de puertos fusionados
+ *   p - Puerto a insertar
+ */
 static void insert_port_into_merge_list(unsigned short *mlist,
                                         int *merged_port_count,
                                         unsigned short p)
 {
   int i;
-  // make sure the port isn't already in the list
+  // Verifica que el puerto no esté ya en la lista
   for (i = 0; i < *merged_port_count; i++)
   {
     if (mlist[i] == p)
@@ -418,6 +435,15 @@ static void insert_port_into_merge_list(unsigned short *mlist,
   (*merged_port_count)++;
 }
 
+/*
+ * Fusiona dos listas de puertos eliminando duplicados
+ * Parámetros:
+ *   port_list1, count1 - Primera lista y su tamaño
+ *   port_list2, count2 - Segunda lista y su tamaño
+ *   merged_port_count - Puntero donde se almacenará el tamaño de la lista fusionada
+ * Retorna:
+ *   Lista fusionada de puertos sin duplicados
+ */
 static unsigned short *merge_port_lists(unsigned short *port_list1, int count1,
                                         unsigned short *port_list2, int count2,
                                         int *merged_port_count)
@@ -427,15 +453,19 @@ static unsigned short *merge_port_lists(unsigned short *port_list1, int count1,
 
   *merged_port_count = 0;
 
+  // Asigna memoria para la lista fusionada
   merged_port_list =
       (unsigned short *)safe_zalloc((count1 + count2) * sizeof(unsigned short));
 
+  // Inserta puertos de la primera lista
   for (i = 0; i < count1; i++)
   {
     insert_port_into_merge_list(merged_port_list,
                                 merged_port_count,
                                 port_list1[i]);
   }
+
+  // Inserta puertos de la segunda lista
   for (i = 0; i < count2; i++)
   {
     insert_port_into_merge_list(merged_port_list,
@@ -443,7 +473,7 @@ static unsigned short *merge_port_lists(unsigned short *port_list1, int count1,
                                 port_list2[i]);
   }
 
-  // if there were duplicate ports then we can save some memory
+  // Reajusta el tamaño de memoria si hubo duplicados
   if (*merged_port_count < (count1 + count2))
   {
     merged_port_list = (unsigned short *)
@@ -454,12 +484,20 @@ static unsigned short *merge_port_lists(unsigned short *port_list1, int count1,
   return merged_port_list;
 }
 
+/*
+ * Valida las listas de puertos y configuraciones de escaneo
+ * Parámetros:
+ *   vports - Estructura con las listas de puertos
+ *   vo - Opciones de Nmap
+ */
 void validate_scan_lists(scan_lists &vports, NmapOps &vo)
 {
+  // Configura el tipo de ping si no está definido
   if (vo.pingtype == PINGTYPE_UNKNOWN)
   {
     if (vo.isr00t)
     {
+      // Para root usa configuración por defecto según IPv4/IPv6
       if (vo.pf() == PF_INET)
       {
         vo.pingtype = DEFAULT_IPV4_PING_TYPES;
@@ -468,6 +506,8 @@ void validate_scan_lists(scan_lists &vports, NmapOps &vo)
       {
         vo.pingtype = DEFAULT_IPV6_PING_TYPES;
       }
+
+      // Configura puertos para ping ACK y SYN
       getpts_simple(DEFAULT_PING_ACK_PORT_SPEC, SCAN_TCP_PORT,
                     &vports.ack_ping_ports, &vports.ack_ping_count);
       getpts_simple(DEFAULT_PING_SYN_PORT_SPEC, SCAN_TCP_PORT,
@@ -475,23 +515,28 @@ void validate_scan_lists(scan_lists &vports, NmapOps &vo)
     }
     else
     {
-      vo.pingtype = PINGTYPE_TCP; // if nonr00t
+      // Para no-root usa ping TCP
+      vo.pingtype = PINGTYPE_TCP;
       getpts_simple(DEFAULT_PING_CONNECT_PORT_SPEC, SCAN_TCP_PORT,
                     &vports.syn_ping_ports, &vports.syn_ping_count);
     }
   }
 
+  // Ajusta configuraciones si no es root
   if (!vo.isr00t)
   {
     if (vo.pingtype & (PINGTYPE_ICMP_PING | PINGTYPE_ICMP_MASK | PINGTYPE_ICMP_TS))
     {
 #ifdef WIN32
-      error("Warning:  Npcap not detected -- using TCP pingscan rather than ICMP");
+      error("Advertencia: Npcap no detectado -- usando ping TCP en lugar de ICMP");
 #else
-      error("Warning:  You are not root -- using TCP pingscan rather than ICMP");
+      error("Advertencia: No es root -- usando ping TCP en lugar de ICMP");
 #endif
+      // Deshabilita pings ICMP y habilita TCP
       vo.pingtype &= ~(PINGTYPE_ICMP_PING | PINGTYPE_ICMP_MASK | PINGTYPE_ICMP_TS);
       vo.pingtype |= PINGTYPE_TCP;
+
+      // Configura puertos TCP si no hay definidos
       if (vports.syn_ping_count == 0)
       {
         getpts_simple(DEFAULT_TCP_PROBE_PORT_SPEC, SCAN_TCP_PORT, &vports.syn_ping_ports, &vports.syn_ping_count);
@@ -500,14 +545,14 @@ void validate_scan_lists(scan_lists &vports, NmapOps &vo)
     }
   }
 
+  // Ajusta el tipo de ping TCP para no-root
   if ((vo.pingtype & PINGTYPE_TCP) && (!vo.isr00t))
   {
-    // We will have to do a connect() style ping
-    // Pretend we wanted SYN probes all along.
+    // Se debe usar ping estilo connect()
+    // Simular que se querían sondeos SYN todo el tiempo
     if (vports.ack_ping_count > 0)
     {
-      // Combine the ACK and SYN ping port lists since they both reduce to
-      // SYN probes in this case
+      // Combina puertos ACK y SYN ya que ambos se reducen a sondeos SYN
       unsigned short *merged_port_list;
       int merged_port_count;
 
@@ -516,7 +561,7 @@ void validate_scan_lists(scan_lists &vports, NmapOps &vo)
           vports.ack_ping_ports, vports.ack_ping_count,
           &merged_port_count);
 
-      // clean up a bit
+      // Limpia memoria
       free(vports.syn_ping_ports);
       free(vports.ack_ping_ports);
 
@@ -525,26 +570,38 @@ void validate_scan_lists(scan_lists &vports, NmapOps &vo)
       vports.ack_ping_count = 0;
       vports.ack_ping_ports = NULL;
     }
+    // Ajusta flags de tipo de ping
     vo.pingtype &= ~PINGTYPE_TCP_USE_ACK;
     vo.pingtype |= PINGTYPE_TCP_USE_SYN;
   }
 }
 
+/*
+ * Variable global con configuración por defecto de FTP
+ */
 struct ftpinfo ftp = get_default_ftpinfo();
 
-/* A list of targets to be displayed by the --route-dst debugging option. */
+/*
+ * Lista de hosts destino para la opción de depuración --route-dst
+ */
 static std::vector<std::string> route_dst_hosts;
 
+/*
+ * Estructura global con las listas de puertos
+ */
 struct scan_lists ports = {0};
 
-/* This struct is used is a temporary storage place that holds options that
-   can't be correctly parsed and interpreted before the entire command line has
-   been read. Examples are -6 and -S. Trying to set the source address without
-   knowing the address family first could result in a failure if you pass an
-   IPv6 address and the address family is still IPv4. */
+/*
+ * Estructura para almacenar opciones que no pueden ser procesadas
+ * hasta que se haya leído toda la línea de comandos. Por ejemplo
+ * -6 y -S, ya que intentar establecer la dirección origen sin
+ * conocer la familia de direcciones podría fallar si se pasa una
+ * IPv6 y la familia es IPv4.
+ */
 static struct delayed_options
 {
 public:
+  // Constructor por defecto
   delayed_options()
   {
     this->pre_max_parallelism = -1;
@@ -565,10 +622,11 @@ public:
     this->raw_scan_options = false;
   }
 
-  // Pre-specified timing parameters.
-  // These are stored here during the parsing of the arguments so that we can
-  // set the defaults specified by any timing template options (-T2, etc) BEFORE
-  // any of these. In other words, these always take precedence over the templates.
+  // Parámetros de temporización especificados
+  // Se almacenan aquí durante el análisis de argumentos para poder
+  // establecer los valores por defecto especificados por plantillas
+  // de temporización (-T2, etc) ANTES de estos. Es decir, estos
+  // siempre tienen prioridad sobre las plantillas.
   int pre_max_parallelism, pre_scan_delay, pre_max_scan_delay;
   int pre_init_rtt_timeout, pre_min_rtt_timeout, pre_max_rtt_timeout;
   int pre_max_retries;
@@ -576,56 +634,152 @@ public:
 #ifndef NOLUA
   double pre_scripttimeout;
 #endif
+  // Nombres de archivos para diferentes formatos de salida
   char *machinefilename, *kiddiefilename, *normalfilename, *xmlfilename;
+
+  // Flags de opciones
   bool iflist, decoys, advanced, raw_scan_options;
+
+  // Especificaciones de exclusión
   char *exclude_spec, *exclude_file;
+
+  // Opciones de suplantación
   char *spoofSource, *decoy_arguments;
   const char *spoofmac;
+
+  // Familia de direcciones (IPv4/IPv6)
   int af;
+
+  // Buffer para mensajes de salida detallada
   std::vector<std::string> verbose_out;
 
+  /*
+   * Muestra advertencia de opción obsoleta
+   * Parámetros:
+   *   given - Opción usada
+   *   replacement - Opción que debe usarse en su lugar
+   */
   void warn_deprecated(const char *given, const char *replacement)
   {
     std::ostringstream os;
-    os << "Warning: The -" << given << " option is deprecated. Please use -" << replacement;
+    os << "Advertencia: La opción -" << given << " está obsoleta. Use -" << replacement;
     this->verbose_out.push_back(os.str());
   }
 
 } delayed_options;
 
+/*
+ * Variable global con hora local
+ */
 struct tm local_time;
 
+/*
+ * Valida el nombre de archivo especificado para la salida de Nmap.
+ *
+ * Esta función realiza comprobaciones de seguridad en los nombres de archivo
+ * utilizados para los diferentes tipos de salida de Nmap (-oN, -oX, etc.).
+ *
+ * Parámetros:
+ *   filename - El nombre del archivo a validar
+ *   option - La opción de línea de comando asociada al archivo (ej: "oN", "oX", "oG")
+ *
+ * Comprobaciones:
+ *   - Verifica que el nombre del archivo no comience con '-' para evitar que se
+ *     interprete como una opción de línea de comandos
+ *   - Para la opción "o", verifica que el primer carácter no sea uno de los tipos
+ *     de salida (N,A,X,G,S) para evitar confusiones con las opciones -oN, -oX, etc.
+ *   - Para la opción "oA", verifica que el archivo no comience con '-' ya que
+ *     esto no está permitido para salida múltiple
+ *
+ * Errores:
+ *   La función termina la ejecución con fatal() si encuentra algún problema de seguridad
+ */
 static void test_file_name(const char *filename, const char *option)
 {
   if (filename[0] == '-' && filename[1] != '\0')
   {
-    fatal("Output filename begins with '-'. Try '-%s ./%s' if you really want it to be named as such.", option, filename);
+    fatal("El nombre del archivo comienza con '-'. Intente '-%s ./%s' si realmente desea que se nombre así.", option, filename);
   }
   else if (strcmp(option, "o") == 0 && strchr("NAXGS", filename[0]))
   {
-    fatal("You are using a deprecated option in a dangerous way. Did you mean: -o%c %s", filename[0], filename + 1);
+    fatal("Está usando una opción obsoleta de forma peligrosa. Quiso decir: -o%c %s", filename[0], filename + 1);
   }
   else if (filename[0] == '-' && strcmp(option, "oA") == 0)
   {
-    fatal("Cannot display multiple output types to stdout.");
+    fatal("No se pueden mostrar múltiples tipos de salida en stdout.");
   }
 }
 
+/**
+ * @brief Analiza y procesa los argumentos de línea de comandos de Nmap
+ *
+ * Esta función es responsable de procesar todas las opciones y argumentos
+ * pasados a Nmap a través de la línea de comandos. Configura las opciones
+ * globales del programa basándose en estos argumentos.
+ *
+ * @param argc Número de argumentos en la línea de comandos
+ * @param argv Array de strings con los argumentos
+ *
+ * Tipos de opciones soportadas:
+ * - Opciones cortas (-v, -p, etc)
+ * - Opciones largas (--verbose, --max-retries, etc)
+ * - Opciones con argumentos (-p 80,443, --exclude-ports 1-1024, etc)
+ *
+ * Comportamiento:
+ * 1. Procesa opciones usando getopt_long_only()
+ * 2. Valida argumentos y sus valores
+ * 3. Configura las opciones globales correspondientes
+ * 4. Maneja errores y conflictos entre opciones
+ *
+ * Principales grupos de opciones:
+ * - Descubrimiento de hosts (-sL, -sn, -Pn)
+ * - Técnicas de escaneo (-sS, -sT, -sU, etc)
+ * - Temporización y rendimiento (-T[0-5], --min-rate, etc)
+ * - Evasión y suplantación (-f, -D, -S, etc)
+ * - Formatos de salida (-oN, -oX, -oG, etc)
+ * - Scripts NSE (--script, --script-args)
+ *
+ * Errores:
+ * - Usa fatal() para errores críticos que impiden continuar
+ * - Usa error() para advertencias que permiten continuar
+ *
+ * Variables globales modificadas:
+ * - o: Opciones globales de Nmap (NmapOps)
+ * - ports: Listas de puertos a escanear
+ * - delayed_options: Opciones que requieren procesamiento posterior
+ *
+ * @note Algunas opciones se almacenan en delayed_options para ser
+ * procesadas después que se hayan analizado todos los argumentos
+ *
+ * @warning Las opciones que requieren privilegios de root son marcadas
+ * y verificadas posteriormente
+ */
 void parse_options(int argc, char **argv)
 {
-  char *p;
-  int arg;
-  long l;
-  double d;
-  char *endptr = NULL;
-  char errstr[256];
-  int option_index;
+  /* Variables locales para el procesamiento */
+  char *p;             // Puntero para procesar strings
+  int arg;             // Valor retornado por getopt_long_only
+  long l;              // Para conversión de argumentos numéricos
+  double d;            // Para valores decimales
+  char *endptr = NULL; // Para verificar conversiones numéricas
+  char errstr[256];    // Buffer para mensajes de error
+  int option_index;    // Índice de la opción larga actual
+
+  /* Arrays para validación de argumentos según endianness */
 #ifdef WORDS_BIGENDIAN
   int k[] = {2037345391, 1935892846, 0, 1279608146, 1331241034, 1162758985, 1314070817, 554303488, 1869291630, 1768383852};
 #else
   int k[] = {1869377401, 1851876211, 0, 1380271436, 1243633999, 1229672005, 555832142, 2593, 1847618415, 1818584937};
 #endif
 
+  /*
+   * Definición de todas las opciones largas soportadas
+   * Cada entrada especifica:
+   * - Nombre de la opción
+   * - Si requiere argumento (required_argument)
+   * - Flag (siempre 0 en este caso)
+   * - Valor retornado (carácter para opciones cortas equivalentes)
+   */
   struct option long_options[] = {
       {"version", no_argument, 0, 'V'},
       {"verbose", no_argument, 0, 'v'},
@@ -732,32 +886,42 @@ void parse_options(int argc, char **argv)
       {"resume", required_argument, 0, 0},
       {0, 0, 0, 0}};
 
-  /* Users have trouble with editors munging ascii hyphens into any of various
-   * dashes. We'll check that none of these is in the command-line first: */
+  /*
+   * Verifica caracteres especiales en argumentos
+   * Los editores pueden convertir guiones ASCII en otros tipos de rayas
+   */
   for (arg = 1; arg < argc; arg++)
   {
-    // Just look at the first character of each.
+    // Detecta guiones/rayas especiales que pueden causar problemas
     switch (argv[arg][0])
     {
-    case '\xe2': // UTF-8, have to look farther
-      // U+2010 through U+2015 are the most likely
+    case '\xe2': // UTF-8, revisar más caracteres
+
       if (argv[arg][1] != '\x80' || argv[arg][2] < '\x90' || argv[arg][2] > '\x95')
         break;
-    case '\x96': // Windows 12** en dash
-    case '\x97': // Windows 12** em dash
-      fatal("Unparseable option (dash, not '-') in argument %d", arg);
+    case '\x96': // Raya en Windows 12**
+    case '\x97': // Raya larga en Windows 12**
+      fatal("Opción no analizable (guión, no '-') en argumento %d", arg);
     default:
       break;
     }
   }
 
-  /* OK, lets parse these args! */
-  optind = 1; /* so it can be called multiple times */
+  /* Procesamiento principal de opciones */
+  optind = 1; // Permite múltiples llamadas
+
+  /*
+   * Bucle principal de procesamiento
+   * Formato de opciones cortas:
+   * 46Ab:D:d::e:... donde:
+   * : simple = argumento requerido
+   * :: doble = argumento opcional
+   */
   while ((arg = getopt_long_only(argc, argv, "46Ab:D:d::e:Ffg:hIi:M:m:nO::o:P::p:qRrS:s::T:Vv::", long_options, &option_index)) != EOF)
   {
     switch (arg)
     {
-    case 0:
+    case 0: // Opciones largas sin equivalente corto
 #ifndef NOLUA
       if (strcmp(long_options[option_index].name, "script") == 0)
       {
@@ -1311,22 +1475,22 @@ void parse_options(int argc, char **argv)
        * ensure that -4 is a valid option */
       if (delayed_options.af == AF_INET6)
       {
-        fatal("Cannot use both -4 and -6 in one scan.");
+        fatal("No se pueden usar -4 y -6 en un mismo escaneo.");
       }
       delayed_options.af = AF_INET;
       break;
     case '6':
 #if !HAVE_IPV6
-      fatal("I am afraid IPv6 is not available because your host doesn't support it or you chose to compile Nmap w/o IPv6 support.");
+      fatal("IPv6 no disponible porque su sistema no lo soporta o compiló Nmap sin soporte IPv6.");
 #else
       if (delayed_options.af == AF_INET)
       {
-        fatal("Cannot use both -4 and -6 in one scan.");
+        fatal("No se pueden usar -4 y -6 en un mismo escaneo.");
       }
       delayed_options.af = AF_INET6;
 #endif /* !HAVE_IPV6 */
       break;
-    case 'A':
+    case 'A': // Modo avanzado y agresivo
       delayed_options.advanced = true;
       break;
     case 'b':
@@ -1387,7 +1551,7 @@ void parse_options(int argc, char **argv)
       exit(0);
       break;
     case '?':
-      error("See the output of nmap -h for a summary of options.");
+      error("Consulte la salida de nmap -h para un resumen de las opciones.");
       exit(-1);
       break;
     case 'I':
@@ -1787,7 +1951,7 @@ void parse_options(int argc, char **argv)
       break;
     }
   }
-}
+} // Fin función parse_options
 
 void apply_delayed_options()
 {
