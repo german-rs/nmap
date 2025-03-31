@@ -1953,6 +1953,35 @@ void parse_options(int argc, char **argv)
   }
 } // Fin función parse_options
 
+/**
+ * @brief Aplica las opciones que fueron retrasadas durante el parsing inicial
+ *
+ * Esta función procesa y aplica las opciones que no pudieron ser configuradas
+ * inmediatamente durante el análisis de argumentos. Esto incluye opciones que:
+ * - Dependen de otras opciones (ej: opciones que requieren conocer IPv4/IPv6)
+ * - Requieren validación adicional
+ * - Necesitan inicialización de recursos
+ *
+ * El procesamiento se realiza en el siguiente orden:
+ * 1. Configuración de familia de direcciones (IPv4/IPv6)
+ * 2. Muestra mensajes de advertencia almacenados
+ * 3. Configura opciones avanzadas y scripts
+ * 4. Procesa opciones de suplantación de IP
+ * 5. Ajusta parámetros de temporización
+ * 6. Configura archivos de salida
+ * 7. Inicializa estructuras de datos necesarias
+ *
+ * Variables globales utilizadas:
+ * @param delayed_options Estructura con opciones pendientes de aplicar
+ * @param o Objeto global de opciones de Nmap
+ *
+ * Archivos de datos:
+ * - nmap-os-db: Base de datos de huellas de SO para IPv4
+ * - nmap-os-db6: Base de datos de huellas para IPv6
+ *
+ * @warning Algunas opciones requieren privilegios de root para funcionar
+ * @note Las opciones incorrectas o inválidas generarán mensajes de error
+ */
 void apply_delayed_options()
 {
   int i;
@@ -1960,9 +1989,10 @@ void apply_delayed_options()
   struct sockaddr_storage ss;
   size_t sslen;
 
-  // Default IPv4
+  /* Configura familia de direcciones por defecto (IPv4) */
   o.setaf(delayed_options.af == AF_UNSPEC ? AF_INET : delayed_options.af);
 
+  /* Muestra mensajes pendientes si el modo verbose está activo */
   if (o.verbose > 0)
   {
     for (std::vector<std::string>::iterator it = delayed_options.verbose_out.begin(); it != delayed_options.verbose_out.end(); ++it)
@@ -1972,6 +2002,7 @@ void apply_delayed_options()
   }
   delayed_options.verbose_out.clear();
 
+  /* Configura opciones avanzadas si fueron solicitadas */
   if (delayed_options.advanced)
   {
     o.servicescan = true;
@@ -1984,24 +2015,28 @@ void apply_delayed_options()
       o.traceroute = true;
     }
   }
+
+  /* Procesa opciones de suplantación de IP */
   if (o.spoofsource)
   {
     int rc = resolve(delayed_options.spoofSource, 0, &ss, &sslen, o.af());
     if (rc != 0)
     {
-      fatal("Failed to resolve/decode supposed %s source address \"%s\": %s",
+      fatal("Error al resolver/decodificar %s la dirección origen \"%s\": %s",
             (o.af() == AF_INET) ? "IPv4" : "IPv6", delayed_options.spoofSource,
             gai_strerror(rc));
     }
     o.setSourceSockAddr(&ss, sslen);
   }
-  // After the arguments are fully processed we now make any of the timing
-  // tweaks the user might've specified:
+
+  /* Aplica parámetros de temporización especificados */
   if (delayed_options.pre_max_parallelism != -1)
     o.max_parallelism = delayed_options.pre_max_parallelism;
   if (delayed_options.pre_scan_delay != -1)
   {
     o.scan_delay = delayed_options.pre_scan_delay;
+
+    /* Ajusta delays máximos si es necesario */
     if (o.scan_delay > o.maxTCPScanDelay())
       o.setMaxTCPScanDelay(o.scan_delay);
     if (o.scan_delay > o.maxUDPScanDelay())
@@ -2058,8 +2093,7 @@ void apply_delayed_options()
               format_ip_options(o.ipoptions, o.ipoptionslen));
   }
 
-  /* Open the log files, now that we know whether the user wants them appended
-     or overwritten */
+  /* Configura archivos de salida */
   if (delayed_options.normalfilename)
   {
     log_open(LOG_NORMAL, o.append_output, delayed_options.normalfilename);
@@ -2081,6 +2115,7 @@ void apply_delayed_options()
     free(delayed_options.xmlfilename);
   }
 
+  /* Habilita razones detalladas en modo verbose */
   if (o.verbose > 1)
     o.reason = true;
 
@@ -2398,43 +2433,151 @@ void apply_delayed_options()
   }
 }
 
-// Free some global memory allocations.
-// This is used for detecting memory leaks.
+/**
+ * @brief Libera la memoria asignada globalmente durante la ejecución de Nmap
+ *
+ * Esta función se encarga de liberar toda la memoria dinámica asignada
+ * durante la ejecución del programa. Es crucial llamarla antes de finalizar
+ * para evitar fugas de memoria (memory leaks).
+ *
+ * Secuencia de liberación:
+ * 1. Objetivos nuevos (NewTargets)
+ * 2. Mapa de puertos (PortList)
+ * 3. Pool de caracteres (charpool)
+ * 4. Servicios
+ * 5. Interfaces de red
+ * 6. Sondeos de servicios
+ * 7. Caché de traceroute
+ * 8. Motor nsock
+ *
+ * Componentes liberados:
+ * @see NewTargets::free_new_targets() - Libera objetivos dinámicamente agregados
+ * @see PortList::freePortMap() - Libera el mapa global de puertos
+ * @see cp_free() - Libera el pool de caracteres
+ * @see free_services() - Libera estructuras de servicios
+ * @see freeinterfaces() - Libera información de interfaces de red
+ * @see AllProbes::service_scan_free() - Libera recursos de escaneo de servicios
+ * @see traceroute_hop_cache_clear() - Limpia caché de saltos de traceroute
+ * @see nsock_set_default_engine() - Resetea el motor de red
+ *
+ * Uso:
+ * - Se llama al finalizar Nmap si la opción --release-memory está activa
+ * - Útil para detectar fugas de memoria durante el desarrollo
+ * - Importante en sistemas con recursos limitados
+ *
+ * @note La liberación se realiza en orden específico para evitar
+ * dependencias circulares
+ * @warning No debe llamarse mientras haya operaciones de escaneo activas
+ */
 void nmap_free_mem()
 {
+  /* Libera objetivos agregados dinámicamente */
   NewTargets::free_new_targets();
+
+  /* Libera el mapa global de puertos */
   PortList::freePortMap();
+
+  /* Libera el pool de caracteres */
   cp_free();
+
+  /* Libera estructuras de servicios */
   free_services();
+
+  /* Libera información de interfaces de red */
   freeinterfaces();
+
+  /* Libera recursos de escaneo de servicios */
   AllProbes::service_scan_free();
+
+  /* Limpia la caché de traceroute */
   traceroute_hop_cache_clear();
+
+  /* Resetea el motor de red por defecto */
   nsock_set_default_engine(NULL);
 }
 
+/**
+ * @brief Función principal que controla la ejecución completa de Nmap
+ *
+ * Esta función es el núcleo de Nmap y coordina todo el proceso de escaneo,
+ * desde el procesamiento de argumentos hasta la generación de informes finales.
+ *
+ * @param argc Número de argumentos de línea de comandos
+ * @param argv Array de argumentos de línea de comandos
+ * @return 0 en caso de éxito, otro valor en caso de error
+ *
+ * Flujo de ejecución:
+ * 1. Inicialización
+ *    - Configura zona horaria y tiempo local
+ *    - Verifica argumentos mínimos
+ *    - Inicializa estructuras de datos
+ *
+ * 2. Procesamiento de opciones
+ *    - Parsea argumentos de línea de comandos
+ *    - Aplica configuraciones retrasadas
+ *    - Valida combinaciones de opciones
+ *
+ * 3. Preparación del escaneo
+ *    - Configura salida XML/normal/máquina
+ *    - Inicializa listas de puertos
+ *    - Configura opciones de red
+ *    - Prepara scripts NSE si están habilitados
+ *
+ * 4. Ejecución del escaneo
+ *    - Agrupa hosts para escaneo eficiente
+ *    - Ejecuta diferentes tipos de escaneo según opciones
+ *    - Realiza detección de SO si está habilitada
+ *    - Ejecuta scripts NSE si están configurados
+ *
+ * 5. Generación de informes
+ *    - Procesa resultados de cada host
+ *    - Genera salidas en formatos solicitados
+ *    - Muestra estadísticas finales
+ *
+ * Variables globales principales:
+ * @param o Opciones globales de Nmap (NmapOps)
+ * @param ports Estructura con listas de puertos a escanear
+ * @param delayed_options Opciones pendientes de aplicar
+ *
+ * Archivos de salida:
+ * - Normal (-oN): Formato legible
+ * - XML (-oX): Formato XML estructurado
+ * - Grepeable (-oG): Formato para procesamiento
+ * - Script kiddie (-oS): Formato estilizado
+ *
+ * Modos de escaneo soportados:
+ * - TCP (SYN, Connect, ACK, etc)
+ * - UDP
+ * - SCTP
+ * - Scripts NSE
+ *
+ * @warning Requiere privilegios root para ciertas funcionalidades
+ * @note Los tiempos de escaneo dependen de múltiples factores
+ */
 int nmap_main(int argc, char *argv[])
 {
+  /* Variables principales */
   int i;
-  std::vector<Target *> Targets;
-  time_t now;
-  time_t timep;
-  char mytime[128];
-  struct addrset *exclude_group;
+  std::vector<Target *> Targets; // Vector de objetivos a escanear
+  time_t now;                    // Tiempo actual
+  time_t timep;                  // Tiempo para formatos
+  char mytime[128];              // Buffer para tiempo formateado
+  struct addrset *exclude_group; // Grupo de exclusiones
 #ifndef NOLUA
-  /* Pre-Scan and Post-Scan script results datastructure */
+  /* Resultados de scripts pre/post escaneo */
   ScriptResults *script_scan_results = NULL;
 #endif
-  unsigned int ideal_scan_group_sz = 0;
-  Target *currenths;
-  char myname[FQDN_LEN + 1];
-  int sourceaddrwarning = 0; /* Have we warned them yet about unguessable
-                                source addresses? */
-  unsigned int targetno;
-  char hostname[FQDN_LEN + 1] = "";
-  struct sockaddr_storage ss;
-  size_t sslen;
-  int err;
+  unsigned int ideal_scan_group_sz = 0; // Tamaño ideal de grupo de escaneo
+  Target *currenths;                    // Host actual siendo procesado
+  char myname[FQDN_LEN + 1];            // Nombre del host local
+  int sourceaddrwarning = 0;            // Control de advertencias de dirección
+  unsigned int targetno;                // Contador de objetivos
+  char hostname[FQDN_LEN + 1] = "";     // Buffer para nombres de host
+  struct sockaddr_storage ss;           // Estructura para direcciones
+  size_t sslen;                         // Longitud de dirección
+  int err;                              // Control de errores
 
+  /* Verificación de entorno WSL en Linux */
 #ifdef LINUX
   /* Check for WSL and warn that things may not go well. */
   struct utsname uts;
@@ -2442,13 +2585,13 @@ int nmap_main(int argc, char *argv[])
   {
     if (strstr(uts.release, "Microsoft") != NULL)
     {
-      error("Warning: %s may not work correctly on Windows Subsystem for Linux.\n"
-            "For best performance and accuracy, use the native Windows build from %s/download.html#windows.",
+      error("Advertencia: %s puede no funcionar correctamente en Windows Subsystem for Linux.\n"
+            "Para mejor rendimiento y precisión, use la versión nativa de Windows desde %s/download.html#windows.",
             NMAP_NAME, NMAP_URL);
     }
   }
 #endif
-
+  /* Inicialización de tiempo y zona horaria */
   tzset();
   now = time(NULL);
   err = n_localtime(&now, &local_time);
@@ -2456,26 +2599,30 @@ int nmap_main(int argc, char *argv[])
   {
     fatal("n_localtime failed: %s", strerror(err));
   }
-
+  /* Verificación de argumentos mínimos */
   if (argc < 2)
   {
     printusage();
     exit(-1);
   }
 
+  /* Reserva inicial para objetivos */
   Targets.reserve(100);
+  /* Inicialización específica de Windows */
 #ifdef WIN32
   win_pre_init();
 #endif
-
+  /* Procesamiento principal */
   parse_options(argc, argv);
 
+  /* Configuración de logging según nivel de debug */
   if (o.debugging)
     nbase_set_log(fatal, error);
   else
     nbase_set_log(fatal, NULL);
 
-  tty_init(); // Put the keyboard in raw mode
+  /* Inicialización de terminal */
+  tty_init();
 
 #ifdef WIN32
   // Must come after parse_options because of --unprivileged
@@ -2997,6 +3144,7 @@ int nmap_main(int argc, char *argv[])
 
   eth_close_cached();
 
+  /* Limpieza final */
   if (o.release_memory)
   {
     nmap_free_mem();
